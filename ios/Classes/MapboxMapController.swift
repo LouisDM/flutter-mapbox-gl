@@ -1,11 +1,9 @@
 import Flutter
 import UIKit
 import Mapbox
-import SymbolController
-import LineController
-import CircleController
 
 class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, MapboxMapOptionsSink {
+    
     
     private var mapView: MGLMapView
     private var isMapReady = false
@@ -15,9 +13,10 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     private var cameraTargetBounds: MGLCoordinateBounds?
     private var trackCameraPosition = false
     private var myLocationEnabled = false
-    private var symbols = Dictionary<String, SymbolController>()
-    private var lines = Dictionary<String, LineController>()
-    private var circles = Dictionary<String, CircleController>()
+    
+    private var symbols:[String : SymbolController]
+    private var lines:[String : LineController]
+    private var circles:[String : CircleController]
 
     func view() -> UIView {
         return mapView
@@ -26,9 +25,9 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?, binaryMessenger messenger: FlutterBinaryMessenger) {
         mapView = MGLMapView(frame: frame)
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        // symbols = [String : SymbolController]()
-        // lines = [String : LineController]()
-        // circles = [String : CircleController]()
+        symbols = [String : SymbolController]()
+        lines = [String : LineController]()
+        circles = [String : CircleController]()
         
         super.init()
         
@@ -37,7 +36,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         
         mapView.delegate = self
         
-        if let args = args as? [String: Any] { 
+        if let args = args as? [String: Any] {
             Convert.interpretMapboxMapOptions(options: args["options"], delegate: self)
             if let initialCameraPosition = args["initialCameraPosition"] as? [String: Any],
                 let camera = MGLMapCamera.fromDict(initialCameraPosition, mapView: mapView),
@@ -47,6 +46,8 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             }
         }
     }
+    
+    
     
     func onMethodCall(methodCall: FlutterMethodCall, result: @escaping FlutterResult) {
         switch(methodCall.method) {
@@ -79,7 +80,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         case "symbol#add":
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             let symbolController = SymbolController.init();
-            Convert.interpretSymbolOptions(options: arguments, delegate: symbolController)
+            Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbolController)
             guard let style = mapView.style else { return }
             style.addLayer(symbolController.symbol!)
             symbols[symbolController.symbol!.identifier] = symbolController
@@ -96,12 +97,12 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let symbolId = arguments["symbol"] as? String else {return}
             guard let symbolController = symbols[symbolId] else { return }
-            Convert.interpretSymbolOptions(options: arguments, delegate: symbolController)
+            Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbolController)
             result(nil)
         case "line#add":
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             let lineController = LineController.init();
-            Convert.interpretLineOptions(options: arguments, delegate: lineController)
+            Convert.interpretLineOptions(options: arguments["options"], delegate: lineController)
             guard let style = mapView.style else { return }
             style.addLayer(lineController.line!)
             lines[lineController.line!.identifier] = lineController
@@ -118,12 +119,12 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let lineId = arguments["line"] as? String else {return}
             guard let lineController = lines[lineId] else { return }
-            Convert.interpretLineOptions(options: arguments, delegate: lineController)
+            Convert.interpretLineOptions(options: arguments["options"], delegate: lineController)
             result(nil)
         case "circle#add":
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             let circleController = CircleController.init();
-            Convert.interpretCircleOptions(options: arguments, delegate: circleController)
+            Convert.interpretCircleOptions(options: arguments["options"], delegate: circleController)
             guard let style = mapView.style else { return }
             style.addLayer(circleController.circle!)
             circles[circleController.circle!.identifier] = circleController
@@ -140,7 +141,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let circleId = arguments["circle"] as? String else {return}
             guard let circleController = circles[circleId] else { return }
-            Convert.interpretCircleOptions(options: arguments, delegate: circleController)
+            Convert.interpretCircleOptions(options: arguments["options"], delegate: circleController)
             result(nil)
         case "circle#getGeometry":
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
@@ -251,4 +252,5 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     func setMyLocationTrackingMode(myLocationTrackingMode: MGLUserTrackingMode) {
         mapView.userTrackingMode = myLocationTrackingMode
     }
+
 }
