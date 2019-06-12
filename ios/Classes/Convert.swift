@@ -116,8 +116,8 @@ class Convert {
         return nil
     }
 
-    class func interpretSymbolOptions(options : Any?,delegate :SymbolOptionsSink) {
-        guard let options = options as? [String: Any] else { return }
+    class func interpretSymbolOptions(options : [Any]?,delegate :SymbolOptionsSink) {
+        guard let options = options[0] as? [String: Any] else { return }
         
         if  let zIndex = options["zIndex"] as? Int {
             delegate.setZIndex(index: zIndex)
@@ -230,8 +230,8 @@ class Convert {
         }
     }
     
-    class func interpretLineOptions(options : Any?,delegate :LineOptionsSink) {
-        guard let options = options as? [String: Any] else { return }
+    class func interpretLineOptions(options : [Any]?,delegate :LineOptionsSink) {
+        guard let options = options[0] as? [String: Any] else { return }
         
         if let geometry = options["geometry"] as? [MGLCoordinateSpan] {
             delegate.setGeometry(geometry: geometry)
@@ -276,8 +276,8 @@ class Convert {
         }
     }
     
-    class func interpretCircleOptions(options : Any?,delegate :CircleOptionsSink) {
-        guard let options = options as? [String: Any] else { return }
+    class func interpretCircleOptions(options : [Any]?,delegate :CircleOptionsSink) {
+        guard let options = options[0] as? [String: Any] else { return }
         
         if  let geometry = options["geometry"] as? MGLCoordinateSpan {
             delegate.setGeometry(geometry: geometry)

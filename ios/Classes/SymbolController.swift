@@ -73,11 +73,8 @@ class SymbolController: NSObject ,SymbolOptionsSink{
     }
     
     func setIconHaloColor(iconHaloColor : String){
-        if #available(iOS 11.0, *) {
-            self.symbol?.iconHaloColor = NSExpression(forConstantValue: UIColor(named: iconHaloColor))
-        } else {
-            // Fallback on earlier versions
-        }
+        
+        self.symbol?.iconHaloColor = NSExpression(forConstantValue: UIColor.hexadecimalColor(hexadecimal: iconHaloColor))
     }
     
     func setIconHaloWidth(iconHaloWidth : Float){
