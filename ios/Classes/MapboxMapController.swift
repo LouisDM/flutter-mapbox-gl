@@ -1,6 +1,9 @@
 import Flutter
 import UIKit
 import Mapbox
+import SymbolController
+import LineController
+import CircleController
 
 class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, MapboxMapOptionsSink {
     
@@ -12,6 +15,9 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     private var cameraTargetBounds: MGLCoordinateBounds?
     private var trackCameraPosition = false
     private var myLocationEnabled = false
+    private var symbols = Dictionary<String, SymbolController>()
+    private var lines = Dictionary<String, LineController>()
+    private var circles = Dictionary<String, CircleController>()
 
     func view() -> UIView {
         return mapView
@@ -20,6 +26,9 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?, binaryMessenger messenger: FlutterBinaryMessenger) {
         mapView = MGLMapView(frame: frame)
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        // symbols = [String : SymbolController]()
+        // lines = [String : LineController]()
+        // circles = [String : CircleController]()
         
         super.init()
         
@@ -28,7 +37,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         
         mapView.delegate = self
         
-        if let args = args as? [String: Any] {
+        if let args = args as? [String: Any] { 
             Convert.interpretMapboxMapOptions(options: args["options"], delegate: self)
             if let initialCameraPosition = args["initialCameraPosition"] as? [String: Any],
                 let camera = MGLMapCamera.fromDict(initialCameraPosition, mapView: mapView),
@@ -67,6 +76,80 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             if let camera = Convert.parseCameraUpdate(cameraUpdate: cameraUpdate, mapView: mapView) {
                 mapView.setCamera(camera, animated: true)
             }
+        case "symbol#add":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            let symbolController = SymbolController.init();
+            Convert.interpretSymbolOptions(options: arguments, delegate: symbolController)
+            guard let style = mapView.style else { return }
+            style.addLayer(symbolController.symbol!)
+            symbols[symbolController.symbol!.identifier] = symbolController
+            result(symbolController.symbol!.identifier)
+        case "symbol#remove":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let symbolId = arguments["symbol"] as? String else {return}
+            guard let symbolController = symbols[symbolId] else { return }
+            symbols.removeValue(forKey: symbolId)
+            guard let style = mapView.style else { return }
+            style.removeLayer(symbolController.symbol!)
+            result(nil)
+        case "symbol#update":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let symbolId = arguments["symbol"] as? String else {return}
+            guard let symbolController = symbols[symbolId] else { return }
+            Convert.interpretSymbolOptions(options: arguments, delegate: symbolController)
+            result(nil)
+        case "line#add":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            let lineController = LineController.init();
+            Convert.interpretLineOptions(options: arguments, delegate: lineController)
+            guard let style = mapView.style else { return }
+            style.addLayer(lineController.line!)
+            lines[lineController.line!.identifier] = lineController
+            result(lineController.line!.identifier)
+        case "line#remove":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let lineId = arguments["line"] as? String else {return}
+            guard let lineController = lines[lineId] else { return }
+            lines.removeValue(forKey: lineId)
+            guard let style = mapView.style else { return }
+            style.removeLayer(lineController.line!)
+            result(nil)
+        case "line#update":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let lineId = arguments["line"] as? String else {return}
+            guard let lineController = lines[lineId] else { return }
+            Convert.interpretLineOptions(options: arguments, delegate: lineController)
+            result(nil)
+        case "circle#add":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            let circleController = CircleController.init();
+            Convert.interpretCircleOptions(options: arguments, delegate: circleController)
+            guard let style = mapView.style else { return }
+            style.addLayer(circleController.circle!)
+            circles[circleController.circle!.identifier] = circleController
+            result(circleController.circle!.identifier)
+        case "circle#remove":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let circleId = arguments["circle"] as? String else {return}
+            guard let circleController = circles[circleId] else { return }
+            lines.removeValue(forKey: circleId)
+            guard let style = mapView.style else { return }
+            style.removeLayer(circleController.circle!)
+            result(nil)
+        case "circle#update":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let circleId = arguments["circle"] as? String else {return}
+            guard let circleController = circles[circleId] else { return }
+            Convert.interpretCircleOptions(options: arguments, delegate: circleController)
+            result(nil)
+        case "circle#getGeometry":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let circleId = arguments["circle"] as? String else {return}
+            guard let circleController = circles[circleId] else { return }
+            var hashMapLatLng = [String : Double]();
+            hashMapLatLng["latitude"] = circleController.geometry?.latitudeDelta
+            hashMapLatLng["longitude"] = circleController.geometry?.longitudeDelta
+            result(hashMapLatLng)
         default:
             result(FlutterMethodNotImplemented)
         }
