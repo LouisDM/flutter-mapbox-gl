@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 import 'dart:math';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:http/http.dart' as http;
 
 import 'page.dart';
 
@@ -73,6 +76,31 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
             center.longitude + cos(_symbolCount * pi / 6.0) / 20.0,
           ),
           iconImage: "airport-15"),
+    );
+    setState(() {
+      _symbolCount += 1;
+    });
+  }
+
+  void _addCustomizeIcon() async {
+    String base64 = await (() async {
+      http.Response response = await http.get(
+        'https://flutter.dev/assets/404/dash_nest-c64796b59b65042a2b40fae5764c13b7477a592db79eaf04c86298dcb75b78ea.png',
+      );
+      return base64Encode(response.bodyBytes);
+    })();
+    print(base64);
+    Map<String, String> imagesMap = {
+      'myImg': base64,
+    };
+    await controller.addImages(imagesMap);
+    controller.addSymbol(
+      SymbolOptions(
+          geometry: LatLng(
+            center.latitude + sin(_symbolCount * pi / 6.0) / 20.0,
+            center.longitude + cos(_symbolCount * pi / 6.0) / 20.0,
+          ),
+          iconImage: "myImg"),
     );
     setState(() {
       _symbolCount += 1;
@@ -203,6 +231,10 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
                         FlatButton(
                           child: const Text('add'),
                           onPressed: (_symbolCount == 12) ? null : _add,
+                        ),
+                        FlatButton(
+                          child: const Text('addCustomizeIcon'),
+                          onPressed: (_symbolCount == 12) ? null : _addCustomizeIcon,
                         ),
                         FlatButton(
                           child: const Text('remove'),

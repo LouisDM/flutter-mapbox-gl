@@ -10,10 +10,14 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 
@@ -478,6 +482,27 @@ final class MapboxMapController
         hashMapLatLng.put("latitude", circleLatLng.getLatitude());
         hashMapLatLng.put("longitude", circleLatLng.getLongitude());
         result.success(hashMapLatLng);
+        break;
+      }
+      case "style#addImages": {
+        final HashMap<String, String> rawImages = call.argument("map");
+        final HashMap<String, Bitmap> images = new HashMap<>();
+
+
+        for (String s : rawImages.keySet()) {
+          Bitmap bitmap = null;
+          try {
+            byte[] bitmapArray = Base64.decode(rawImages.get(s), Base64.DEFAULT);
+            bitmap = BitmapFactory.decodeByteArray(bitmapArray, 0, bitmapArray.length);
+            images.put(s, bitmap);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        }
+        Log.i(TAG, rawImages.toString());
+        Log.i(TAG, images.toString());
+        mapboxMap.getStyle().addImages(images);
+        result.success(null);
         break;
       }
       default:
