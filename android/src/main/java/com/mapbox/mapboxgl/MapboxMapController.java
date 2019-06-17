@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.location.Location;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
@@ -32,7 +33,9 @@ import com.mapbox.mapboxsdk.location.LocationComponentOptions;
 import com.mapbox.mapboxsdk.location.OnCameraTrackingChangedListener;
 import com.mapbox.mapboxsdk.location.modes.CameraMode;
 import com.mapbox.mapboxsdk.location.modes.RenderMode;
-import com.mapbox.mapboxsdk.maps.MapView;
+// import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.plugins.china.maps.ChinaMapView;
+import com.mapbox.mapboxsdk.plugins.china.shift.ShiftForChina;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.Style;
@@ -46,6 +49,10 @@ import com.mapbox.mapboxsdk.plugins.annotation.Line;
 import com.mapbox.mapboxsdk.plugins.annotation.LineManager;
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
+
+import org.json.JSONObject;
+import org.json.JSONException;
+
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -56,7 +63,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import static com.mapbox.mapboxgl.MapboxMapsPlugin.CREATED;
 import static com.mapbox.mapboxgl.MapboxMapsPlugin.DESTROYED;
@@ -88,7 +97,7 @@ final class MapboxMapController
   private final AtomicInteger activityState;
   private final MethodChannel methodChannel;
   private final PluginRegistry.Registrar registrar;
-  private final MapView mapView;
+  private final ChinaMapView mapView;
   private MapboxMap mapboxMap;
   private final Map<String, SymbolController> symbols;
   private final Map<String, LineController> lines;
@@ -120,7 +129,7 @@ final class MapboxMapController
     this.activityState = activityState;
     this.registrar = registrar;
     this.styleStringInitial = styleStringInitial;
-    this.mapView = new MapView(context, options);
+    this.mapView = new ChinaMapView(context, options);
     this.symbols = new HashMap<>();
     this.lines = new HashMap<>();
     this.circles = new HashMap<>();
@@ -478,6 +487,7 @@ final class MapboxMapController
         final String circleId = call.argument("circle");
         final CircleController circle = circle(circleId);
         final LatLng circleLatLng = circle.getGeometry();
+
         Map<String, Double> hashMapLatLng = new HashMap<>();
         hashMapLatLng.put("latitude", circleLatLng.getLatitude());
         hashMapLatLng.put("longitude", circleLatLng.getLongitude());
@@ -487,7 +497,6 @@ final class MapboxMapController
       case "style#addImages": {
         final HashMap<String, String> rawImages = call.argument("map");
         final HashMap<String, Bitmap> images = new HashMap<>();
-
 
         for (String s : rawImages.keySet()) {
           Bitmap bitmap = null;
@@ -499,10 +508,43 @@ final class MapboxMapController
             e.printStackTrace();
           }
         }
-        Log.i(TAG, rawImages.toString());
-        Log.i(TAG, images.toString());
         mapboxMap.getStyle().addImages(images);
         result.success(null);
+        break;
+      }
+      case "location#getLastLatLng": {
+        final Location location = locationComponent.getLastKnownLocation();
+
+        Map<String, Double> hashMapLatLng = new HashMap<>();
+        hashMapLatLng.put("latitude", location.getLatitude());
+        hashMapLatLng.put("longitude", location.getLongitude());
+        result.success(hashMapLatLng);
+        break;
+      }
+      case "location#chinaShift": {
+
+        final List<Double> listLatLng = call.argument("unshiftedLatLng");
+        String shiftedCoordinatesJson = new ShiftForChina().shift(listLatLng.get(1), listLatLng.get(0));
+
+        Log.e(TAG, "/// " + listLatLng.get(0) + ",  " + listLatLng.get(1));
+        try {
+          JSONObject jsonObject = new JSONObject(shiftedCoordinatesJson);
+          double shiftedLatitude = jsonObject.getDouble("lat");
+          double shiftedLongitude = jsonObject.getDouble("lon");
+
+          Log.e(TAG, "///2 " + shiftedLatitude + ",  " + shiftedLongitude);
+          Log.e(TAG, "///3 " + shiftedCoordinatesJson);
+
+          Map<String, Double> hashMapLatLng = new HashMap<>();
+          hashMapLatLng.put("latitude", shiftedLatitude);
+          hashMapLatLng.put("longitude", shiftedLongitude);
+          result.success(hashMapLatLng);
+
+          // You now have longitude and latitude values, which you can use how you'd like.
+        } catch (JSONException jsonException) {
+          jsonException.printStackTrace();
+        }
+
         break;
       }
       default:

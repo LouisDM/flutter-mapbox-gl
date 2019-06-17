@@ -194,6 +194,36 @@ class MapUiBodyState extends State<MapUiBody> {
     );
   }
 
+  Widget _getUserLocation() {
+    return FlatButton(
+      child: Text('get user location'),
+      onPressed: () async {
+        LatLng latLng = await mapController.getUserLatLng();
+        Scaffold.of(context).showSnackBar(
+            SnackBar(
+              content: Text('user location: $latLng'),
+            ),
+        );
+      },
+    );
+  }
+
+  Widget _getChinaShiftLocation() {
+    return FlatButton(
+      child: Text('get China ShiftLocation'),
+      onPressed: () async {
+        LatLng unshiftedLatLng = new LatLng(23.097694, 113.313026);
+        LatLng latLng = await mapController.chinaShift(unshiftedLatLng);
+        Scaffold.of(context).showSnackBar(
+          SnackBar(
+            content: Text('China ShiftLocation: $latLng'),
+          ),
+        );
+        print('$latLng');
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final MapboxMap mapboxMap = MapboxMap(
@@ -259,6 +289,8 @@ class MapUiBodyState extends State<MapUiBody> {
               _tiltToggler(),
               _zoomToggler(),
               _myLocationToggler(),
+              _getUserLocation(),
+              _getChinaShiftLocation(),
             ],
           ),
         ),

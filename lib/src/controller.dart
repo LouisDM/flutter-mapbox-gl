@@ -463,6 +463,26 @@ class MapboxMapController extends ChangeNotifier {
     _circles.remove(id);
   }
 
+  /// 获取设备当前的位置
+  Future<LatLng> getUserLatLng() async {
+    Map rawLatLng = await _channel.invokeMethod('location#getLastLatLng');
+    LatLng userLatLng = new LatLng(rawLatLng['latitude'], rawLatLng['longitude']);
+    notifyListeners();
+    return userLatLng;
+  }
+
+  /// 由于某国特殊的政策，这个函数可以把 WGS-84 坐标 转换成 GCJ-02（地图使用的） 坐标
+  Future<LatLng> chinaShift(LatLng unshiftedLatLng) async {
+    List list = [unshiftedLatLng.latitude, unshiftedLatLng.longitude];
+
+    Map rawLatLng = await _channel.invokeMethod('location#chinaShift', <String, dynamic>{
+      'unshiftedLatLng': list,
+    });
+    LatLng userLatLng = new LatLng(rawLatLng['latitude'], rawLatLng['longitude']);
+    notifyListeners();
+    return userLatLng;
+  }
+
   Future<List> queryRenderedFeatures(
       Point<double> point, List<String> layerIds, String filter) async {
     try {

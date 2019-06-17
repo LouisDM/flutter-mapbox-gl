@@ -4,7 +4,6 @@
 
 import 'dart:math';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
@@ -85,7 +84,7 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
   void _addCustomizeIcon() async {
     String base64 = await (() async {
       http.Response response = await http.get(
-        'https://flutter.dev/assets/404/dash_nest-c64796b59b65042a2b40fae5764c13b7477a592db79eaf04c86298dcb75b78ea.png',
+        'https://flutte.dev/assets/404/dash_nest-c64796b59b65042a2b40fae5764c13b7477a592db79eaf04c86298dcb75b78ea.png',
       );
       return base64Encode(response.bodyBytes);
     })();
