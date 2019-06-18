@@ -33,8 +33,8 @@ import com.mapbox.mapboxsdk.location.LocationComponentOptions;
 import com.mapbox.mapboxsdk.location.OnCameraTrackingChangedListener;
 import com.mapbox.mapboxsdk.location.modes.CameraMode;
 import com.mapbox.mapboxsdk.location.modes.RenderMode;
-// import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.plugins.china.maps.ChinaMapView;
+ import com.mapbox.mapboxsdk.maps.MapView;
+//import com.mapbox.mapboxsdk.plugins.china.maps.ChinaMapView;
 import com.mapbox.mapboxsdk.plugins.china.shift.ShiftForChina;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
@@ -97,7 +97,7 @@ final class MapboxMapController
   private final AtomicInteger activityState;
   private final MethodChannel methodChannel;
   private final PluginRegistry.Registrar registrar;
-  private final ChinaMapView mapView;
+  private final MapView mapView;
   private MapboxMap mapboxMap;
   private final Map<String, SymbolController> symbols;
   private final Map<String, LineController> lines;
@@ -129,7 +129,7 @@ final class MapboxMapController
     this.activityState = activityState;
     this.registrar = registrar;
     this.styleStringInitial = styleStringInitial;
-    this.mapView = new ChinaMapView(context, options);
+    this.mapView = new MapView(context, options);
     this.symbols = new HashMap<>();
     this.lines = new HashMap<>();
     this.circles = new HashMap<>();
