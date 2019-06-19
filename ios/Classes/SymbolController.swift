@@ -1,7 +1,15 @@
+//
+//  SymbolController.swift
+//  FlutterDemo
+//
+//  Created by 林思凯 on 5/6/2019.
+//  Copyright © 2019 linsikai. All rights reserved.
+//
+
 import UIKit
 import Mapbox.MGLGeometry
 
-class SymbolController: NSObject ,SymbolOptionsSink{
+class SymbolController: NSObject{
     
     
     var symbol : MGLSymbolStyleLayer?
@@ -73,8 +81,11 @@ class SymbolController: NSObject ,SymbolOptionsSink{
     }
     
     func setIconHaloColor(iconHaloColor : String){
-        
-        self.symbol?.iconHaloColor = NSExpression(forConstantValue: UIColor.hexadecimalColor(hexadecimal: iconHaloColor))
+        if #available(iOS 11.0, *) {
+            self.symbol?.iconHaloColor = NSExpression(forConstantValue: UIColor(named: iconHaloColor))
+        } else {
+            // Fallback on earlier versions
+        }
     }
     
     func setIconHaloWidth(iconHaloWidth : Float){
