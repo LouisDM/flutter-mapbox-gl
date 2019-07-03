@@ -18,6 +18,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     private var lineManager: LineManager?
     private var circleManager: CircleManager?
+    private var imagesDict = [String:UIImage]()
     
     func view() -> UIView {
         return mapView
@@ -27,6 +28,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         mapView = MGLMapView(frame: frame, styleURL: MGLStyle.streetsStyleURL)
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.registrar = registrar
+        
         
         super.init()
         
@@ -168,6 +170,47 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             
             circleManager.delete(annotation: circle)
             result(nil)
+        case "circle#getGeometry":
+            guard let circleManager = circleManager else { return }
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let circleIdString = arguments["circle"] as? String else { return }
+            guard let circleId = UInt64(circleIdString) else { return }
+            guard let circle = circleManager.getAnnotation(id: circleId) else { return }
+            
+            let circleGeometry = circle.geometry
+            result(["latitude":circleGeometry.coordinates[0],
+                    "longitude":circleGeometry.coordinates[1]])
+        case "style#addImages":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let mapDic = arguments["map"] as? [String:String] else {return}
+            
+            for (key, value) in mapDic {
+                
+                var imageBase = value
+                
+                if value.hasPrefix("data:image/png;base64,") {
+                    
+                    imageBase = String(value.suffix("data:image/png;base64,".count))
+                }
+                
+                guard let imgNSData = NSData(base64Encoded: imageBase, options: Data.Base64DecodingOptions.ignoreUnknownCharacters) else {
+                    return
+                }
+                // 3、将NSData的图片，转换成UIImage
+                if let codeImage = UIImage(data: imgNSData as Data) {
+                    
+                    //                    mapView.style?.setImage(codeImage, forName: key);
+                    self.imagesDict[key] = codeImage
+                }
+            }
+            result(nil)
+        case "location#getLastLatLng":
+            if myLocationEnabled == false{
+                result(nil)
+            }else{
+                result(["latitude":mapView.userLocation?.location?.coordinate.latitude,
+                        "longitude":mapView.userLocation?.location?.coordinate.longitude])
+            }
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -259,7 +302,8 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             // Initialize the annotation image (from predefined assets symbol folder).
             //            let assetPath = registrar.lookupKey(forAsset: "assets/symbols/")
             //            let image = UIImage.loadFromFile(imagePath: assetPath, imageName: iconImage)
-            let image = UIImage.init(named: "icon_order_hotel")
+//            let image = self.mapView.style?.image(forName: iconImage)
+            let image = self.imagesDict[iconImage]
             if let image = image {
                 annotationImage = MGLAnnotationImage(image: image, reuseIdentifier: iconImage)
             }
