@@ -1,4 +1,3 @@
-
 import Mapbox
 
 protocol SymbolOptionsSink {    
