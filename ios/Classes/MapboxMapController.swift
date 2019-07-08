@@ -18,17 +18,16 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     private var lineManager: LineManager?
     private var circleManager: CircleManager?
-    private var imagesDict = [String:UIImage]()
+    private var symbolManager: SymbolManager?
     
     func view() -> UIView {
         return mapView
     }
     
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?, registrar: FlutterPluginRegistrar) {
-        mapView = MGLMapView(frame: frame, styleURL: MGLStyle.streetsStyleURL)
+        mapView = MGLMapView(frame: frame)
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.registrar = registrar
-        
         
         super.init()
         
@@ -79,30 +78,38 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
                 mapView.setCamera(camera, animated: true)
             }
         case "symbol#add":
+            guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
-            let symbol = Symbol()
-            Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbol)
-            if CLLocationCoordinate2DIsValid(symbol.geometry) {
-                mapView.selectAnnotation(symbol, animated: true)
-                result(symbol.id)
+            
+            
+            // Create a circle and populate it.
+            let symbolBuilder = SymbolBuilder(symbolManager: symbolManager)
+            Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbolBuilder)
+            if let symbol = symbolBuilder.build() {
+                result("\(symbol.id)")
             } else {
                 result(nil)
             }
         case "symbol#update":
+            guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let symbolIdString = arguments["symbol"] as? String else { return }
+            guard let symbolId = UInt64(symbolIdString) else { return }
+            guard let symbol = symbolManager.getAnnotation(id: symbolId) else { return }
             
-            if let symbol = getSymbolInMapView(mapView: mapView, symbolId: symbolIdString) {
-                Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbol)
-            }
+            // Create a circle and populate it.
+            let symbolBuilder = SymbolBuilder(symbolManager: symbolManager, symbol: symbol)
+            Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbolBuilder)
+            symbolBuilder.update(id: symbolId)
             result(nil)
         case "symbol#remove":
+            guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let symbolIdString = arguments["symbol"] as? String else { return }
+            guard let symbolId = UInt64(symbolIdString) else { return }
+            guard let symbol = symbolManager.getAnnotation(id: symbolId) else { return }
             
-            if let symbol = getSymbolInMapView(mapView: mapView, symbolId: symbolIdString) {
-                mapView.removeAnnotation(symbol)
-            }
+            symbolManager.delete(annotation: symbol)
             result(nil)
         case "line#add":
             guard let lineManager = lineManager else { return }
@@ -170,6 +177,13 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             
             circleManager.delete(annotation: circle)
             result(nil)
+        case "location#getLastLatLng":
+            if myLocationEnabled == false{
+                result(nil)
+            }else{
+                result(["latitude":mapView.userLocation?.location?.coordinate.latitude,
+                        "longitude":mapView.userLocation?.location?.coordinate.longitude])
+            }
         case "circle#getGeometry":
             guard let circleManager = circleManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
@@ -199,36 +213,16 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
                 // 3、将NSData的图片，转换成UIImage
                 if let codeImage = UIImage(data: imgNSData as Data) {
                     
-                    //                    mapView.style?.setImage(codeImage, forName: key);
-                    self.imagesDict[key] = codeImage
+                    mapView.style?.setImage(codeImage, forName: key);
                 }
             }
             result(nil)
-        case "location#getLastLatLng":
-            if myLocationEnabled == false{
-                result(nil)
-            }else{
-                result(["latitude":mapView.userLocation?.location?.coordinate.latitude,
-                        "longitude":mapView.userLocation?.location?.coordinate.longitude])
-            }
+            
         default:
             result(FlutterMethodNotImplemented)
         }
     }
     
-    
-    private func getSymbolInMapView(mapView: MGLMapView, symbolId: String) -> Symbol? {
-        if let annotations = mapView.annotations {
-            for (_, annotation) in annotations.enumerated() {
-                if let symbolAnnotation = annotation as? Symbol {
-                    if symbolAnnotation.id == symbolId {
-                        return symbolAnnotation
-                    }
-                }
-            }
-        }
-        return nil
-    }
     
     private func updateMyLocationEnabled() {
         //TODO
@@ -263,6 +257,12 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             style.addLayer(circleManager.layer!)
         }
         
+        symbolManager = SymbolManager()
+        if let symbolManager = symbolManager{
+            style.addSource(symbolManager.source)
+            style.addLayer(symbolManager.layer!)
+        }
+        
         mapReadyResult?(nil)
     }
     
@@ -287,39 +287,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         
         return inside && intersects
     }
-    
-    
-    
-    func mapView(_ mapView: MGLMapView, imageFor annotation: MGLAnnotation) -> MGLAnnotationImage? {
-        // Only for Symbols images should loaded.
-        guard let symbol = annotation as? Symbol,
-            let iconImage = symbol.iconImage else {
-                return nil
-        }
-        // Reuse existing annotations for better performance.
-        var annotationImage = mapView.dequeueReusableAnnotationImage(withIdentifier: iconImage)
-        if annotationImage == nil {
-            // Initialize the annotation image (from predefined assets symbol folder).
-            //            let assetPath = registrar.lookupKey(forAsset: "assets/symbols/")
-            //            let image = UIImage.loadFromFile(imagePath: assetPath, imageName: iconImage)
-//            let image = self.mapView.style?.image(forName: iconImage)
-            let image = self.imagesDict[iconImage]
-            if let image = image {
-                annotationImage = MGLAnnotationImage(image: image, reuseIdentifier: iconImage)
-            }
-        }
-        return annotationImage
-    }
-    
-    
-    // Allow callout view to appear when an annotation is tapped.
-    func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
-        return true
-    }
-    
-    
-    
-    
     
     
     
@@ -376,6 +343,5 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     }
     
 }
-
 
 
