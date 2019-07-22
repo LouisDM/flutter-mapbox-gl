@@ -35,7 +35,7 @@ class SymbolBuilder: SymbolOptionsSink {
         symbolOptions.iconRotate = iconRotate
     }
     
-    func setIconOffset(iconOffset: [Float]) {
+    func setIconOffset(iconOffset: [Double]) {
         symbolOptions.iconOffset = iconOffset
     }
     
@@ -75,7 +75,7 @@ class SymbolBuilder: SymbolOptionsSink {
         symbolOptions.textTransform = textTransform
     }
     
-    func setTextOffset(textOffset: [Float]) {
+    func setTextOffset(textOffset: [Double]) {
         symbolOptions.textOffset = textOffset
     }
     
@@ -135,3 +135,4 @@ class SymbolBuilder: SymbolOptionsSink {
         symbolManager.update(id: id, options: symbolOptions)
     }
 }
+

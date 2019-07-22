@@ -47,7 +47,6 @@ class SymbolOptions: Options<SymbolGeometry> {
         self.geometry = SymbolGeometry(coordinates: geometry)
     }
     
-    
     var iconSize: Float? {
         get{
             if let value = properties[SymbolOptions.KEY_SYMBOL_ICON_SIZE] {
@@ -84,10 +83,10 @@ class SymbolOptions: Options<SymbolGeometry> {
         }
     }
     
-    var iconOffset: [Float]? {
+    var iconOffset: [Double]? {
         get{
             if let value = properties[SymbolOptions.KEY_SYMBOL_ICON_OFFSET] {
-                return value.encodable as? [Float]
+                return value.encodable as? [Double]
             }
             return nil
         }
@@ -204,10 +203,10 @@ class SymbolOptions: Options<SymbolGeometry> {
         }
     }
     
-    var textOffset: [Float]? {
+    var textOffset: [Double]? {
         get{
             if let value = properties[SymbolOptions.KEY_SYMBOL_TEXT_OFFSET] {
-                return value.encodable as? [Float]
+                return value.encodable as? [Double]
             }
             return nil
         }
@@ -369,3 +368,4 @@ class SymbolOptions: Options<SymbolGeometry> {
         return nil
     }
 }
+

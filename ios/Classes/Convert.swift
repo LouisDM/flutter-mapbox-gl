@@ -122,16 +122,16 @@ class Convert {
         if let geometry = options["geometry"] as? [Double] {
             delegate.setGeometry(geometry: geometry)
         }
-        if let iconSize = options["iconSize"] as? Float {
-            delegate.setIconSize(iconSize: iconSize)
+        if let iconSize = options["iconSize"] as? Double {
+            delegate.setIconSize(iconSize: Float(iconSize))
         }
         if let iconImage = options["iconImage"] as? String {
             delegate.setIconImage(iconImage: iconImage)
         }
-        if let iconRotate = options["iconRotate"] as? Float {
-            delegate.setIconRotate(iconRotate: iconRotate)
+        if let iconRotate = options["iconRotate"] as? Double {
+            delegate.setIconRotate(iconRotate: Float(iconRotate))
         }
-        if let iconOffset = options["iconOffset"] as? [Float] {
+        if let iconOffset = options["iconOffset"] as? [Double] {
             delegate.setIconOffset(iconOffset: iconOffset)
         }
         if let iconAnchor = options["iconAnchor"] as? String {
@@ -140,14 +140,14 @@ class Convert {
         if let textField = options["textField"] as? String {
             delegate.setTextField(textField: textField)
         }
-        if let textSize = options["textSize"] as? Float {
-            delegate.setTextSize(textSize: textSize)
+        if let textSize = options["textSize"] as? Double {
+            delegate.setTextSize(textSize: Float(textSize))
         }
-        if let textMaxWidth = options["textMaxWidth"] as? Float {
-            delegate.setTextMaxWidth(textMaxWidth: textMaxWidth)
+        if let textMaxWidth = options["textMaxWidth"] as? Double {
+            delegate.setTextMaxWidth(textMaxWidth: Float(textMaxWidth))
         }
-        if let textLetterSpacing = options["textLetterSpacing"] as? Float {
-            delegate.setTextLetterSpacing(textLetterSpacing: textLetterSpacing)
+        if let textLetterSpacing = options["textLetterSpacing"] as? Double {
+            delegate.setTextLetterSpacing(textLetterSpacing: Float(textLetterSpacing))
         }
         if let textJustify = options["textJustify"] as? String {
             delegate.setTextJustify(textJustify: textJustify)
@@ -155,17 +155,17 @@ class Convert {
         if let textAnchor = options["textAnchor"] as? String {
             delegate.setTextAnchor(textAnchor: textAnchor)
         }
-        if let textRotate = options["textRotate"] as? Float {
-            delegate.setTextRotate(textRotate: textRotate)
+        if let textRotate = options["textRotate"] as? Double {
+            delegate.setTextRotate(textRotate: Float(textRotate))
         }
         if let textTransform = options["textTransform"] as? String {
             delegate.setTextTransform(textTransform: textTransform)
         }
-        if let textOffset = options["textOffset"] as? [Float] {
+        if let textOffset = options["textOffset"] as? [Double] {
             delegate.setTextOffset(textOffset: textOffset)
         }
-        if let iconOpacity = options["iconOpacity"] as? Float {
-            delegate.setIconOpacity(iconOpacity: iconOpacity)
+        if let iconOpacity = options["iconOpacity"] as? Double {
+            delegate.setIconOpacity(iconOpacity: Float(iconOpacity))
         }
         if let iconColor = options["iconColor"] as? String {
             delegate.setIconColor(iconColor: iconColor)
@@ -173,14 +173,14 @@ class Convert {
         if let iconHaloColor = options["iconHaloColor"] as? String {
             delegate.setIconHaloColor(iconHaloColor: iconHaloColor)
         }
-        if let iconHaloWidth = options["iconHaloWidth"] as? Float {
-            delegate.setIconHaloWidth(iconHaloWidth: iconHaloWidth)
+        if let iconHaloWidth = options["iconHaloWidth"] as? Double {
+            delegate.setIconHaloWidth(iconHaloWidth: Float(iconHaloWidth))
         }
-        if let iconHaloBlur = options["iconHaloBlur"] as? Float {
-            delegate.setIconHaloBlur(iconHaloBlur: iconHaloBlur)
+        if let iconHaloBlur = options["iconHaloBlur"] as? Double {
+            delegate.setIconHaloBlur(iconHaloBlur: Float(iconHaloBlur))
         }
-        if let textOpacity = options["textOpacity"] as? Float {
-            delegate.setTextOpacity(textOpacity: textOpacity)
+        if let textOpacity = options["textOpacity"] as? Double {
+            delegate.setTextOpacity(textOpacity: Float(textOpacity))
         }
         if let textColor = options["textColor"] as? String {
             delegate.setTextColor(textColor: textColor)
@@ -188,11 +188,11 @@ class Convert {
         if let textHaloColor = options["textHaloColor"] as? String {
             delegate.setTextHaloColor(textHaloColor: textHaloColor)
         }
-        if let textHaloWidth = options["textHaloWidth"] as? Float {
-            delegate.setTextHaloWidth(textHaloWidth: textHaloWidth)
+        if let textHaloWidth = options["textHaloWidth"] as? Double {
+            delegate.setTextHaloWidth(textHaloWidth: Float(textHaloWidth))
         }
-        if let textHaloBlur = options["textHaloBlur"] as? Float {
-            delegate.setTextHaloBlur(textHaloBlur: textHaloBlur)
+        if let textHaloBlur = options["textHaloBlur"] as? Double {
+            delegate.setTextHaloBlur(textHaloBlur: Float(textHaloBlur))
         }
         if let zIndex = options["zIndex"] as? Int {
             delegate.setZIndex(index: zIndex)
@@ -282,5 +282,4 @@ class Convert {
         return MGLAltitudeForZoomLevel(zoom, mapView.camera.pitch, mapView.camera.centerCoordinate.latitude, mapView.frame.size)
     }
 }
-
 

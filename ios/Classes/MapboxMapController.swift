@@ -342,6 +342,58 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         mapView.userTrackingMode = myLocationTrackingMode
     }
     
+    
+    func getMapCurrentImageBase64(zoom: Double) -> NSString {
+        
+        let options = MGLMapSnapshotOptions.init(styleURL: self.mapView.styleURL, camera: self.mapView.camera, size: self.mapView.bounds.size)
+        
+        options.zoomLevel = self.mapView.zoomLevel
+        
+        let snapshotter = MGLMapSnapshotter.init(options: options)
+        
+        var imageCopy = UIImage.init()
+        
+        snapshotter.start { (snapshot, error) in
+            
+            CFRunLoopStop(CFRunLoopGetMain())
+            
+            if let image = snapshot?.image {
+                
+                imageCopy = image
+            }
+            
+        }
+        
+        CFRunLoopRun()
+        
+        let image = self.getMapCurrentImage(target: self.mapView, backImage: imageCopy)
+        
+        let data = image.jpegData(compressionQuality: CGFloat(zoom))
+        
+        return data!.base64EncodedString(options: NSData.Base64EncodingOptions.init(rawValue: 0)) as NSString
+    }
+    
+    
+    func getMapCurrentImage(target: UIView, backImage: UIImage) -> UIImage {
+        
+        let imageSize = target.bounds.size
+        
+        UIGraphicsBeginImageContextWithOptions(imageSize, false, UIScreen.main.scale)
+        
+        let content = UIGraphicsGetCurrentContext()!
+        
+        backImage.draw(in: target.bounds)
+        
+        target.layer.render(in: content)
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        
+        UIGraphicsEndPDFContext()
+        
+        return image!
+        
+    }
+    
 }
 
 
