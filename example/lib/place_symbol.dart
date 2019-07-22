@@ -81,14 +81,36 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
     });
   }
 
+  void _add1() {
+    controller.addSymbol(
+      SymbolOptions(
+          geometry: LatLng(
+            23.1004640000,
+            113.3206560000,
+          ),
+          iconImage: "airport-15"
+      ),
+    );
+  }
+
+  void _add2() {
+    controller.addSymbol(
+      SymbolOptions(
+          geometry: LatLng(
+            23.097857,
+            113.326072,
+          ),
+          iconImage: "airport-15"),
+    );
+  }
+
   void _addCustomizeIcon() async {
     String base64 = await (() async {
       http.Response response = await http.get(
-        'https://flutte.dev/assets/404/dash_nest-c64796b59b65042a2b40fae5764c13b7477a592db79eaf04c86298dcb75b78ea.png',
+        'https://avatars0.githubusercontent.com/u/26264400?s=460&v=4',
       );
       return base64Encode(response.bodyBytes);
     })();
-    print(base64);
     Map<String, String> imagesMap = {
       'myImg': base64,
     };
@@ -211,6 +233,7 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
             height: 200.0,
             child: MapboxMap(
               onMapCreated: _onMapCreated,
+              styleString: 'mapbox://styles/mapbox/streets-zh-v1',
               initialCameraPosition: const CameraPosition(
                 target: LatLng(-33.852, 151.211),
                 zoom: 11.0,
@@ -230,6 +253,14 @@ class PlaceSymbolBodyState extends State<PlaceSymbolBody> {
                         FlatButton(
                           child: const Text('add'),
                           onPressed: (_symbolCount == 12) ? null : _add,
+                        ),
+                        FlatButton(
+                          child: const Text('add1'),
+                          onPressed: _add1,
+                        ),
+                        FlatButton(
+                          child: const Text('add2'),
+                          onPressed: _add2,
                         ),
                         FlatButton(
                           child: const Text('addCustomizeIcon'),

@@ -39,6 +39,8 @@ import com.mapbox.mapboxsdk.plugins.china.shift.ShiftForChina;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.snapshotter.MapSnapshot;
+import com.mapbox.mapboxsdk.snapshotter.MapSnapshotter;
 import com.mapbox.mapboxsdk.plugins.annotation.Annotation;
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 import com.mapbox.mapboxsdk.plugins.annotation.CircleManager;
@@ -58,6 +60,7 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.platform.PlatformView;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -522,18 +525,13 @@ final class MapboxMapController
         break;
       }
       case "location#chinaShift": {
-
         final List<Double> listLatLng = call.argument("unshiftedLatLng");
         String shiftedCoordinatesJson = new ShiftForChina().shift(listLatLng.get(1), listLatLng.get(0));
 
-        Log.e(TAG, "/// " + listLatLng.get(0) + ",  " + listLatLng.get(1));
         try {
           JSONObject jsonObject = new JSONObject(shiftedCoordinatesJson);
           double shiftedLatitude = jsonObject.getDouble("lat");
           double shiftedLongitude = jsonObject.getDouble("lon");
-
-          Log.e(TAG, "///2 " + shiftedLatitude + ",  " + shiftedLongitude);
-          Log.e(TAG, "///3 " + shiftedCoordinatesJson);
 
           Map<String, Double> hashMapLatLng = new HashMap<>();
           hashMapLatLng.put("latitude", shiftedLatitude);
@@ -545,6 +543,31 @@ final class MapboxMapController
           jsonException.printStackTrace();
         }
 
+        break;
+      }
+      case "extra#snapshot": {
+        final int quality = call.argument("quality");
+
+        MapSnapshotter.Options snapShotOptions = new MapSnapshotter
+                .Options(500, 500)
+                .withStyle(mapboxMap.getStyle().getUrl())
+                .withCameraPosition(mapboxMap.getCameraPosition());
+
+        MapSnapshotter mapSnapshotter = new MapSnapshotter(context, snapShotOptions);
+        // TODO sometimes can't get callback, i have no idea about this
+        mapSnapshotter.start(new MapSnapshotter.SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(MapSnapshot snapshot) {
+              Bitmap bitmapImage = snapshot.getBitmap();
+              // bitmap2string
+              String str = null;
+              ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+              bitmapImage.compress(Bitmap.CompressFormat.PNG, quality, bStream);
+              byte[]bytes = bStream.toByteArray();
+              str = Base64.encodeToString(bytes, Base64.DEFAULT);
+              result.success(str);
+            }
+        });
         break;
       }
       default:

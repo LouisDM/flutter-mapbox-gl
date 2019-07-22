@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
@@ -204,6 +206,7 @@ class MapUiBodyState extends State<MapUiBody> {
               content: Text('user location: $latLng'),
             ),
         );
+        print('user location $latLng');
       },
     );
   }
@@ -212,7 +215,7 @@ class MapUiBodyState extends State<MapUiBody> {
     return FlatButton(
       child: Text('get China ShiftLocation'),
       onPressed: () async {
-        LatLng unshiftedLatLng = new LatLng(23.097694, 113.313026);
+        LatLng unshiftedLatLng = new LatLng(23.1004640000, 113.3206560000);
         LatLng latLng = await mapController.chinaShift(unshiftedLatLng);
         Scaffold.of(context).showSnackBar(
           SnackBar(
@@ -220,6 +223,26 @@ class MapUiBodyState extends State<MapUiBody> {
           ),
         );
         print('$latLng');
+      },
+    );
+  }
+
+  Widget _getMapSnapShot() {
+    return FlatButton(
+      child: Text('get Map SnapShot'),
+      onPressed: () async {
+        String b64 = await mapController.mapSnapShot(50);
+        print('base64 $b64');
+        showDialog(
+            context: context,
+            builder: (context) {
+              return Image.memory(
+                base64.decode(b64.replaceAll('\n', '')),
+                width: 100,
+                height: 100,
+              );
+            }
+        );
       },
     );
   }
@@ -291,6 +314,7 @@ class MapUiBodyState extends State<MapUiBody> {
               _myLocationToggler(),
               _getUserLocation(),
               _getChinaShiftLocation(),
+              _getMapSnapShot(),
             ],
           ),
         ),
