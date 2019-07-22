@@ -122,3 +122,4 @@ class SymbolManager: AnnotationManager<SymbolGeometry> {
         
     }
 }
+

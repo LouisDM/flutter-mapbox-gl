@@ -1,3 +1,4 @@
+
 import Mapbox
 
 protocol SymbolOptionsSink {
@@ -9,7 +10,7 @@ protocol SymbolOptionsSink {
     
     func setIconRotate(iconRotate: Float)
     
-    func setIconOffset(iconOffset: [Float])
+    func setIconOffset(iconOffset: [Double])
     
     func setIconAnchor(iconAnchor: String)
     
@@ -29,7 +30,7 @@ protocol SymbolOptionsSink {
     
     func setTextTransform(textTransform: String)
     
-    func setTextOffset(textOffset: [Float])
+    func setTextOffset(textOffset: [Double])
     
     func setIconOpacity(iconOpacity: Float)
     
@@ -57,3 +58,4 @@ protocol SymbolOptionsSink {
     
     func setDraggable(draggable: Bool)
 }
+
