@@ -217,6 +217,54 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
                 }
             }
             result(nil)
+        case "extra#snapshot":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            
+            guard let width = arguments["width"] as? Int else { return  }
+            
+            guard let height = arguments["height"] as? Int else { return  }
+            
+            guard let lat = arguments["lat"] as? Double else { return  }
+            
+            guard let lng = arguments["lng"] as? Double else { return  }
+            
+            guard let quality = arguments["quality"] as? Int else { return  }
+            
+            guard let zoom = arguments["zoom"] as? Double else { return  }
+            
+            let camera = MGLMapCamera.init()
+            
+            camera.centerCoordinate = CLLocationCoordinate2DMake(lat, lng)
+            
+            let options = MGLMapSnapshotOptions.init(styleURL: self.mapView.styleURL, camera: camera, size: CGSize.init(width: width, height: height))
+            
+            options.zoomLevel = zoom
+            
+            let snapshotter = MGLMapSnapshotter.init(options: options)
+            
+            snapshotter.start { (snapshot, error) in
+                
+                if error != nil {
+                    
+                    if let image = snapshot?.image {
+                        
+                        /*
+                         如果是要用到有symbol等自定义layer的，吧下面两行的注释打开，
+                         再吧let data = image.jpegData(compressionQuality: CGFloat(Float(arguments)/100))注释掉就可以了
+                         */
+                        //                    let imageFinal = self.getMapCurrentImage(target: self.mapView, backImage: image)
+                        //
+                        //                    let data = imageFinal.jpegData(compressionQuality: CGFloat(Float(arguments)/100))
+                        
+                        let data = image.jpegData(compressionQuality: CGFloat(Double(quality)/100.0))
+                        
+                        result((data!.base64EncodedString(options: NSData.Base64EncodingOptions.init(rawValue: 0)) as NSString).replacingOccurrences(of: "\r\n", with: ""))
+                    }
+                }else{
+                    result(error)
+                }
+                
+            }
             
         default:
             result(FlutterMethodNotImplemented)
@@ -376,13 +424,13 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     func getMapCurrentImage(target: UIView, backImage: UIImage) -> UIImage {
         
-        let imageSize = target.bounds.size
-        
-        UIGraphicsBeginImageContextWithOptions(imageSize, false, UIScreen.main.scale)
+        UIGraphicsBeginImageContextWithOptions(backImage.size, false, UIScreen.main.scale)
         
         let content = UIGraphicsGetCurrentContext()!
         
-        backImage.draw(in: target.bounds)
+        backImage.draw(in: CGRect.init(x: 0, y: 0, width: backImage.size.width, height: backImage.size.height))
+        
+        content.translateBy(x: (backImage.size.width - target.bounds.size.width) * 0.5, y: (backImage.size.height - target.bounds.size.height) * 0.5)
         
         target.layer.render(in: content)
         
