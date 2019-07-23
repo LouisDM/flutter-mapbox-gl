@@ -217,6 +217,33 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
                 }
             }
             result(nil)
+        case "extra#snapshot":
+            guard let arguments = methodCall.arguments as? Int else { return }
+            
+            let options = MGLMapSnapshotOptions.init(styleURL: self.mapView.styleURL, camera: self.mapView.camera, size: CGSize.init(width: 500, height: 500))
+            
+            options.zoomLevel = self.mapView.zoomLevel
+            
+            let snapshotter = MGLMapSnapshotter.init(options: options)
+            
+            snapshotter.start { (snapshot, error) in
+                
+                if let image = snapshot?.image {
+                    
+                    /*
+                     如果是要用到有symbol等自定义layer的，吧下面两行的注释打开，
+                     再吧let data = image.jpegData(compressionQuality: CGFloat(Float(arguments)/100))注释掉就可以了
+                     */
+                    //                    let imageFinal = self.getMapCurrentImage(target: self.mapView, backImage: image)
+                    //
+                    //                    let data = imageFinal.jpegData(compressionQuality: CGFloat(Float(arguments)/100))
+                    
+                    let data = image.jpegData(compressionQuality: CGFloat(Double(arguments)/100.0))
+                    
+                    result("data:image/png;base64," + (data!.base64EncodedString(options: NSData.Base64EncodingOptions.init(rawValue: 0)) as NSString).replacingOccurrences(of: "\r\n", with: ""))
+                }
+                
+            }
             
         default:
             result(FlutterMethodNotImplemented)
@@ -376,13 +403,13 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     func getMapCurrentImage(target: UIView, backImage: UIImage) -> UIImage {
         
-        let imageSize = target.bounds.size
-        
-        UIGraphicsBeginImageContextWithOptions(imageSize, false, UIScreen.main.scale)
+        UIGraphicsBeginImageContextWithOptions(backImage.size, false, UIScreen.main.scale)
         
         let content = UIGraphicsGetCurrentContext()!
         
-        backImage.draw(in: target.bounds)
+        backImage.draw(in: CGRect.init(x: 0, y: 0, width: backImage.size.width, height: backImage.size.height))
+        
+        content.translateBy(x: (backImage.size.width - target.bounds.size.width) * 0.5, y: (backImage.size.height - target.bounds.size.height) * 0.5)
         
         target.layer.render(in: content)
         
