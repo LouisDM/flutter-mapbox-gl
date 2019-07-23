@@ -485,11 +485,15 @@ class MapboxMapController extends ChangeNotifier {
 
   Future<String> mapSnapShot(int quality) async {
     assert(quality > 0 && quality <= 100);
-    String b64 = await _channel.invokeMethod('extra#snapshot', <String, dynamic>{
-      'quality': quality,
-    });
-    notifyListeners();
-    return b64;
+    try {
+      String b64 = await _channel.invokeMethod(
+          'extra#snapshot', <String, dynamic>{'quality': quality,}
+      );
+      notifyListeners();
+      return b64;
+    } catch (error) {
+      throw error;
+    }
   }
 
   Future<List> queryRenderedFeatures(

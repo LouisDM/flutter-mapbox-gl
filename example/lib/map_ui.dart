@@ -232,7 +232,7 @@ class MapUiBodyState extends State<MapUiBody> {
       child: Text('get Map SnapShot'),
       onPressed: () async {
         String b64 = await mapController.mapSnapShot(50);
-        print('base64 $b64');
+        print('base64 ${b64.replaceAll('\n', '')}');
         showDialog(
             context: context,
             builder: (context) {

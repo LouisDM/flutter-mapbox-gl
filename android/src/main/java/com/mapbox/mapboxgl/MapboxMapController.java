@@ -551,23 +551,32 @@ final class MapboxMapController
         MapSnapshotter.Options snapShotOptions = new MapSnapshotter
                 .Options(500, 500)
                 .withStyle(mapboxMap.getStyle().getUrl())
-                .withCameraPosition(mapboxMap.getCameraPosition());
+                .withCameraPosition(mapboxMap.getCameraPosition())
+                .withLogo(false);
 
         MapSnapshotter mapSnapshotter = new MapSnapshotter(context, snapShotOptions);
         // TODO sometimes can't get callback, i have no idea about this
-        mapSnapshotter.start(new MapSnapshotter.SnapshotReadyCallback() {
-            @Override
-            public void onSnapshotReady(MapSnapshot snapshot) {
-              Bitmap bitmapImage = snapshot.getBitmap();
-              // bitmap2string
-              String str = null;
-              ByteArrayOutputStream bStream = new ByteArrayOutputStream();
-              bitmapImage.compress(Bitmap.CompressFormat.PNG, quality, bStream);
-              byte[]bytes = bStream.toByteArray();
-              str = Base64.encodeToString(bytes, Base64.DEFAULT);
-              result.success(str);
-            }
-        });
+        mapSnapshotter.start(
+                new MapSnapshotter.SnapshotReadyCallback() {
+                  @Override
+                  public void onSnapshotReady(MapSnapshot snapshot) {
+                    Bitmap bitmapImage = snapshot.getBitmap();
+                    // bitmap2string
+                    String str = null;
+                    ByteArrayOutputStream bStream = new ByteArrayOutputStream();
+                    bitmapImage.compress(Bitmap.CompressFormat.PNG, quality, bStream);
+                    byte[] bytes = bStream.toByteArray();
+                    str = Base64.encodeToString(bytes, Base64.DEFAULT);
+                    result.success(str);
+                  }
+                },
+                new MapSnapshotter.ErrorHandler() {
+                  @Override
+                  public void onError(String error) {
+                    result.error("SnapshotError", error, null);
+                  }
+                }
+        );
         break;
       }
       default:
