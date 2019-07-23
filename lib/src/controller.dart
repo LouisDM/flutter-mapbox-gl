@@ -483,11 +483,30 @@ class MapboxMapController extends ChangeNotifier {
     return userLatLng;
   }
 
-  Future<String> mapSnapShot(int quality) async {
+  Future<String> mapSnapShot({
+    @required int width,
+    @required int height,
+    @required double lat,
+    @required double lng,
+    double zoom = 12,
+    double tilt = 0,
+    double bearing = 0,
+    int quality = 50,
+  }) async {
     assert(quality > 0 && quality <= 100);
     try {
       String b64 = await _channel.invokeMethod(
-          'extra#snapshot', <String, dynamic>{'quality': quality,}
+          'extra#snapshot',
+          <String, dynamic> {
+            'quality': quality,
+            'width': width,
+            'height': height,
+            'lat': lat,
+            'lng': lng,
+            'zoom': zoom,
+            'tilt': tilt,
+            'bearing': bearing,
+          },
       );
       notifyListeners();
       return b64;

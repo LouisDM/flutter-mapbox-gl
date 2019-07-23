@@ -546,12 +546,26 @@ final class MapboxMapController
         break;
       }
       case "extra#snapshot": {
+        final int width = call.argument("width");
+        final int height = call.argument("height");
         final int quality = call.argument("quality");
+        final double lat = call.argument("lat");
+        final double lng = call.argument("lng");
+        final LatLng latLng = new LatLng(lat, lng);
+        final double zoom = call.argument("zoom");
+        final double tilt = call.argument("tilt");
+        final double bearing = call.argument("bearing");
+        final CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(latLng)
+                .zoom(zoom)
+                .tilt(tilt)
+                .bearing(bearing)
+                .build();
 
         MapSnapshotter.Options snapShotOptions = new MapSnapshotter
-                .Options(500, 500)
+                .Options(width, height)
                 .withStyle(mapboxMap.getStyle().getUrl())
-                .withCameraPosition(mapboxMap.getCameraPosition())
+                .withCameraPosition(cameraPosition)
                 .withLogo(false);
 
         MapSnapshotter mapSnapshotter = new MapSnapshotter(context, snapShotOptions);

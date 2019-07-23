@@ -231,7 +231,14 @@ class MapUiBodyState extends State<MapUiBody> {
     return FlatButton(
       child: Text('get Map SnapShot'),
       onPressed: () async {
-        String b64 = await mapController.mapSnapShot(50);
+        String b64 = await mapController.mapSnapShot(
+          width: 500,
+          height: 500,
+          lat: mapController.cameraPosition.target.latitude,
+          lng: mapController.cameraPosition.target.longitude,
+          zoom: mapController.cameraPosition.zoom,
+          quality: 50,
+        );
         print('base64 ${b64.replaceAll('\n', '')}');
         showDialog(
             context: context,
