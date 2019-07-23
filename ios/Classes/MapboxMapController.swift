@@ -218,29 +218,50 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             }
             result(nil)
         case "extra#snapshot":
-            guard let arguments = methodCall.arguments as? Int else { return }
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
             
-            let options = MGLMapSnapshotOptions.init(styleURL: self.mapView.styleURL, camera: self.mapView.camera, size: CGSize.init(width: 500, height: 500))
+            guard let width = arguments["width"] as? Int else { return  }
             
-            options.zoomLevel = self.mapView.zoomLevel
+            guard let height = arguments["height"] as? Int else { return  }
+            
+            guard let lat = arguments["lat"] as? Double else { return  }
+            
+            guard let lng = arguments["lng"] as? Double else { return  }
+            
+            guard let quality = arguments["quality"] as? Int else { return  }
+            
+            guard let zoom = arguments["zoom"] as? Double else { return  }
+            
+            let camera = MGLMapCamera.init()
+            
+            camera.centerCoordinate = CLLocationCoordinate2DMake(lat, lng)
+            
+            let options = MGLMapSnapshotOptions.init(styleURL: self.mapView.styleURL, camera: camera, size: CGSize.init(width: width, height: height))
+            
+            options.zoomLevel = zoom
             
             let snapshotter = MGLMapSnapshotter.init(options: options)
             
             snapshotter.start { (snapshot, error) in
                 
-                if let image = snapshot?.image {
+                if error != nil {
                     
-                    /*
-                     如果是要用到有symbol等自定义layer的，吧下面两行的注释打开，
-                     再吧let data = image.jpegData(compressionQuality: CGFloat(Float(arguments)/100))注释掉就可以了
-                     */
-                    //                    let imageFinal = self.getMapCurrentImage(target: self.mapView, backImage: image)
-                    //
-                    //                    let data = imageFinal.jpegData(compressionQuality: CGFloat(Float(arguments)/100))
-                    
-                    let data = image.jpegData(compressionQuality: CGFloat(Double(arguments)/100.0))
-                    
-                    result("data:image/png;base64," + (data!.base64EncodedString(options: NSData.Base64EncodingOptions.init(rawValue: 0)) as NSString).replacingOccurrences(of: "\r\n", with: ""))
+                    if let image = snapshot?.image {
+                        
+                        /*
+                         如果是要用到有symbol等自定义layer的，吧下面两行的注释打开，
+                         再吧let data = image.jpegData(compressionQuality: CGFloat(Float(arguments)/100))注释掉就可以了
+                         */
+                        //                    let imageFinal = self.getMapCurrentImage(target: self.mapView, backImage: image)
+                        //
+                        //                    let data = imageFinal.jpegData(compressionQuality: CGFloat(Float(arguments)/100))
+                        
+                        let data = image.jpegData(compressionQuality: CGFloat(Double(quality)/100.0))
+                        
+                        result((data!.base64EncodedString(options: NSData.Base64EncodingOptions.init(rawValue: 0)) as NSString).replacingOccurrences(of: "\r\n", with: ""))
+                    }
+                }else{
+                    result(error)
                 }
                 
             }
