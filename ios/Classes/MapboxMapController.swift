@@ -81,6 +81,18 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             
+            if let options = arguments["options"] as? NSDictionary {
+                
+                if let geometry = options["geometry"] as? [Double] {
+                    
+                    if geometry.count == 0 {
+                        
+                        result(nil)
+                        
+                        break
+                    }
+                }
+            }
             
             // Create a circle and populate it.
             let symbolBuilder = SymbolBuilder(symbolManager: symbolManager)
@@ -115,6 +127,19 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let lineManager = lineManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             
+            if let options = arguments["options"] as? NSDictionary {
+                
+                if let geometry = options["geometry"] as? [[Double]] {
+                    
+                    if geometry.count == 0 {
+                        
+                        result(nil)
+                        
+                        break
+                    }
+                }
+            }
+            
             // Create a line and populate it.
             let lineBuilder = LineBuilder(lineManager: lineManager)
             Convert.interpretLineOptions(options: arguments["options"], delegate: lineBuilder)
@@ -148,6 +173,18 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let circleManager = circleManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             
+            if let options = arguments["options"] as? NSDictionary {
+                
+                if let geometry = options["geometry"] as? [Double] {
+                    
+                    if geometry.count == 0 {
+                        
+                        result(nil)
+                        
+                        break
+                    }
+                }
+            }
             // Create a circle and populate it.
             let circleBuilder = CircleBuilder(circleManager: circleManager)
             Convert.interpretCircleOptions(options: arguments["options"], delegate: circleBuilder)
