@@ -59,6 +59,15 @@ class MapboxMapController extends ChangeNotifier {
   /// Callbacks to receive tap events for symbols placed on this map.
   final ArgumentCallbacks<Circle> onCircleTapped = ArgumentCallbacks<Circle>();
 
+  /// Callbacks to receive dragStart events for symbols placed on this map.
+  final ArgumentCallbacks<Circle> onCircleDragStart = ArgumentCallbacks<Circle>();
+
+  /// Callbacks to receive drag events for symbols placed on this map.
+  final ArgumentCallbacks<Circle> onCircleDrag = ArgumentCallbacks<Circle>();
+
+  /// Callbacks to receive dragEnd events for symbols placed on this map.
+  final ArgumentCallbacks<Circle> onCircleDragEnd = ArgumentCallbacks<Circle>();
+
   /// Callbacks to receive tap events for info windows on symbols
   final ArgumentCallbacks<Symbol> onInfoWindowTapped =
       ArgumentCallbacks<Symbol>();
@@ -123,6 +132,27 @@ class MapboxMapController extends ChangeNotifier {
         final Circle circle = _circles[circleId];
         if (circle != null) {
           onCircleTapped(circle);
+        }
+        break;
+      case 'circle#onDragStart':
+        final String circleId = call.arguments['circle'];
+        final Circle circle = _circles[circleId];
+        if (circle != null) {
+          onCircleDragStart(circle);
+        }
+        break;
+      case 'circle#onDrag':
+        final String circleId = call.arguments['circle'];
+        final Circle circle = _circles[circleId];
+        if (circle != null) {
+          onCircleDrag(circle);
+        }
+        break;
+      case 'circle#onDragEnd':
+        final String circleId = call.arguments['circle'];
+        final Circle circle = _circles[circleId];
+        if (circle != null) {
+          onCircleDragEnd(circle);
         }
         break;
       case 'camera#onMoveStarted':

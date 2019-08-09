@@ -37,11 +37,17 @@ class PlaceCircleBodyState extends State<PlaceCircleBody> {
   void _onMapCreated(MapboxMapController controller) {
     this.controller = controller;
     controller.onCircleTapped.add(_onCircleTapped);
+    controller.onCircleDragStart.add(_onCircleDragStart);
+    controller.onCircleDrag.add(_onCircleDrag);
+    controller.onCircleDragEnd.add(_onCircleEnd);
   }
 
   @override
   void dispose() {
     controller?.onCircleTapped?.remove(_onCircleTapped);
+    controller?.onCircleDragStart?.remove(_onCircleDragStart);
+    controller?.onCircleDrag?.remove(_onCircleDrag);
+    controller?.onCircleDragEnd?.remove(_onCircleEnd);
     super.dispose();
   }
 
@@ -59,6 +65,18 @@ class PlaceCircleBodyState extends State<PlaceCircleBody> {
         circleRadius: 30,
       ),
     );
+  }
+
+  void _onCircleDragStart(Circle circle) {
+    print('circleDragStart');
+  }
+
+  void _onCircleDrag(Circle circle) {
+    print('circleDrag');
+  }
+
+  void _onCircleEnd(Circle circle) {
+    print('circleDragEnd');
   }
 
   void _updateSelectedCircle(CircleOptions changes) {

@@ -44,6 +44,7 @@ import com.mapbox.mapboxsdk.snapshotter.MapSnapshotter;
 import com.mapbox.mapboxsdk.plugins.annotation.Annotation;
 import com.mapbox.mapboxsdk.plugins.annotation.Circle;
 import com.mapbox.mapboxsdk.plugins.annotation.CircleManager;
+import com.mapbox.mapboxsdk.plugins.annotation.OnCircleDragListener;
 import com.mapbox.mapboxsdk.plugins.annotation.OnAnnotationClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
@@ -94,6 +95,7 @@ final class MapboxMapController
   OnSymbolTappedListener,
   OnLineTappedListener,
   OnCircleTappedListener,
+  OnCircleDragAssembleListener,
   PlatformView {
   private static final String TAG = "MapboxMapController";
   private final int id;
@@ -350,6 +352,23 @@ final class MapboxMapController
     if (circleManager == null) {
       circleManager = new CircleManager(mapView, mapboxMap, style);
       circleManager.addClickListener(MapboxMapController.this::onAnnotationClick);
+      // Click LongClick 写法可以一样， Drag 使用类似的写法会报 xxx is not functional interface 查找源码无望后，翻到文章 https://github.com/mapbox/mapbox-plugins-android/blob/master/app/src/main/java/com/mapbox/mapboxsdk/plugins/testapp/activity/annotation/CircleActivity.java 的 drag 写法
+      circleManager.addDragListener(new OnCircleDragListener() {
+        @Override
+        public void onAnnotationDragStarted(Circle circle) {
+          onCircleDragStart(circle);
+        }
+
+        @Override
+        public void onAnnotationDrag(Circle circle) {
+          onCircleDrag(circle);
+        }
+
+        @Override
+        public void onAnnotationDragFinished(Circle circle) {
+          onCircleDragEnd(circle);
+        }
+      });
     }
   }
 
@@ -570,6 +589,7 @@ final class MapboxMapController
 
         MapSnapshotter mapSnapshotter = new MapSnapshotter(context, snapShotOptions);
         // TODO sometimes can't get callback, i have no idea about this
+        Log.e(TAG, "snapshot start");
         mapSnapshotter.start(
                 new MapSnapshotter.SnapshotReadyCallback() {
                   @Override
@@ -587,7 +607,8 @@ final class MapboxMapController
                 new MapSnapshotter.ErrorHandler() {
                   @Override
                   public void onError(String error) {
-                    result.error("SnapshotError", error, null);
+                      Log.e(TAG, "snapshot error！");
+                      result.error("SnapshotError", error, null);
                   }
                 }
         );
@@ -673,6 +694,27 @@ final class MapboxMapController
     final Map<String, Object> arguments = new HashMap<>(2);
     arguments.put("circle", String.valueOf(circle.getId()));
     methodChannel.invokeMethod("circle#onTap", arguments);
+  }
+
+  @Override
+  public void onCircleDragStart(Circle circle) {
+    final Map<String, Object> arguments = new HashMap<>(2);
+    arguments.put("circle", String.valueOf(circle.getId()));
+    methodChannel.invokeMethod("circle#onDragStart", arguments);
+  }
+
+  @Override
+  public void onCircleDrag(Circle circle) {
+    final Map<String, Object> arguments = new HashMap<>(2);
+    arguments.put("circle", String.valueOf(circle.getId()));
+    methodChannel.invokeMethod("circle#onDrag", arguments);
+  }
+
+  @Override
+  public void onCircleDragEnd(Circle circle) {
+    final Map<String, Object> arguments = new HashMap<>(2);
+    arguments.put("circle", String.valueOf(circle.getId()));
+    methodChannel.invokeMethod("circle#onDragEnd", arguments);
   }
 
   @Override
