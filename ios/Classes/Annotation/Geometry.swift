@@ -8,6 +8,11 @@ struct CircleGeometry: Point {
     var coordinates: [Double]
 }
 
+struct SymbolGeometry: Point {
+    let type = "Point"
+    var coordinates: [Double]
+}
+
 // Geometry protocols
 
 protocol Geometry: Encodable {
