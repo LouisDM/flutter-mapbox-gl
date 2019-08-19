@@ -218,8 +218,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             if myLocationEnabled == false{
                 result(nil)
             }else{
-                result(["latitude":mapView.userLocation?.location?.coordinate.latitude,
-                        "longitude":mapView.userLocation?.location?.coordinate.longitude])
+                result(["latitude":mapView.userLocation?.location?.coordinate.latitude,"longitude":mapView.userLocation?.location?.coordinate.longitude])
             }
         case "circle#getGeometry":
             guard let circleManager = circleManager else { return }
@@ -229,8 +228,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let circle = circleManager.getAnnotation(id: circleId) else { return }
             
             let circleGeometry = circle.geometry
-            result(["latitude":circleGeometry.coordinates[0],
-                    "longitude":circleGeometry.coordinates[1]])
+            result(["latitude":circleGeometry.coordinates[1],"longitude":circleGeometry.coordinates[0]])
         case "style#addImages":
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let mapDic = arguments["map"] as? [String:String] else {return}
