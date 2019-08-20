@@ -309,6 +309,13 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     private func updateMyLocationEnabled() {
         //TODO
+        if let userLocation = mapView.userLocation {
+            
+            if let coordinate = userLocation.location {
+                
+                mapView.setCenter(coordinate.coordinate, animated: true)
+            }
+        }
     }
     
     private func getCamera() -> MGLMapCamera? {
