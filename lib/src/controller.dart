@@ -582,4 +582,19 @@ class MapboxMapController extends ChangeNotifier {
       return new Future.error(e);
     }
   }
+
+  /// 更新Map的语言，默认跟随系统语言版本
+  /// [language].
+  /// 简体中文：name_zh-Hans
+  /// 繁体中文：name_zh-Hant
+  /// 英文：name_en
+  Future<void> updateMapLanguage(String language) async {
+    assert(language != null);
+    _channel.invokeMethod(
+      'mapbox#localization',
+      <String, dynamic>{
+        'language': language,
+      },
+    );
+  }
 }

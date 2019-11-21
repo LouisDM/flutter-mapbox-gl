@@ -39,6 +39,8 @@ import com.mapbox.mapboxsdk.plugins.china.shift.ShiftForChina;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.Style;
+import com.mapbox.mapboxsdk.plugins.localization.LocalizationPlugin;
+import com.mapbox.mapboxsdk.plugins.localization.MapLocale;
 import com.mapbox.mapboxsdk.snapshotter.MapSnapshot;
 import com.mapbox.mapboxsdk.snapshotter.MapSnapshotter;
 import com.mapbox.mapboxsdk.plugins.annotation.Annotation;
@@ -285,6 +287,27 @@ final class MapboxMapController
     mapboxMap.addOnCameraIdleListener(this);
     setStyleString(styleStringInitial);
     // updateMyLocationEnabled();
+    setLanguage("default");
+  }
+
+  private void setLanguage(String language){
+
+    this.mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
+      @Override
+      public void onStyleLoaded(@NonNull Style style) {
+        LocalizationPlugin localizationPlugin = new LocalizationPlugin(mapView, mapboxMap, style);
+
+        try {
+          if (language.equals("default")){
+            localizationPlugin.matchMapLanguageWithDeviceDefault();
+          } else {
+            localizationPlugin.setMapLanguage(language);
+          }
+        } catch (RuntimeException exception) {
+          Log.d(TAG, exception.toString());
+        }
+      }
+    });
   }
 
   @Override
@@ -612,6 +635,11 @@ final class MapboxMapController
                   }
                 }
         );
+        break;
+      }
+      case "mapbox#localization": {
+        final String language = call.argument("language");
+        setLanguage(language);
         break;
       }
       default:
