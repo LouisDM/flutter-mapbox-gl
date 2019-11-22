@@ -122,6 +122,7 @@ final class MapboxMapController
   private final Context context;
   private final String styleStringInitial;
   private LocationComponent locationComponent = null;
+  private LocalizationPlugin localizationPlugin = null;
 
   MapboxMapController(
     int id,
@@ -287,27 +288,26 @@ final class MapboxMapController
     mapboxMap.addOnCameraIdleListener(this);
     setStyleString(styleStringInitial);
     // updateMyLocationEnabled();
-    setLanguage("default");
   }
 
   private void setLanguage(String language){
-
-    this.mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
-      @Override
-      public void onStyleLoaded(@NonNull Style style) {
-        LocalizationPlugin localizationPlugin = new LocalizationPlugin(mapView, mapboxMap, style);
-
-        try {
-          if (language.equals("default")){
-            localizationPlugin.matchMapLanguageWithDeviceDefault();
-          } else {
-            localizationPlugin.setMapLanguage(language);
-          }
-        } catch (RuntimeException exception) {
-          Log.d(TAG, exception.toString());
-        }
+    if (this.mapboxMap == null || localizationPlugin == null) return;
+    try {
+      localizationPlugin.matchMapLanguageWithDeviceDefault(false);
+      switch (language){
+        case "name_zh-Hans":
+          localizationPlugin.setMapLanguage(MapLocale.CHINESE_HANS);
+          break;
+        case "name_zh-Hant":
+          localizationPlugin.setMapLanguage(MapLocale.CHINESE_HANT);
+          break;
+        case "name_en":
+          localizationPlugin.setMapLanguage(MapLocale.ENGLISH);
+          break;
       }
-    });
+    } catch (RuntimeException exception) {
+      Log.d(TAG, exception.toString());
+    }
   }
 
   @Override
@@ -329,6 +329,7 @@ final class MapboxMapController
       enableSymbolManager(style);
       enableCircleManager(style);
       enableLocationComponent(style);
+      enableLocalization(style);
       // needs to be placed after SymbolManager#addClickListener,
       // is fixed with 0.6.0 of annotations plugin
       mapboxMap.addOnMapClickListener(MapboxMapController.this);
@@ -350,6 +351,15 @@ final class MapboxMapController
       locationComponent.addOnCameraTrackingChangedListener(this);
     } else {
       Log.e(TAG, "missing location permissions");
+    }
+  }
+
+  private void enableLocalization(@NonNull Style style){
+    localizationPlugin = new LocalizationPlugin(mapView, mapboxMap, style);
+    try {
+        localizationPlugin.matchMapLanguageWithDeviceDefault();
+    } catch (RuntimeException exception) {
+      Log.d(TAG, exception.toString());
     }
   }
 
