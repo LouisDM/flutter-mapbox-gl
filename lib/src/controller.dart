@@ -597,4 +597,16 @@ class MapboxMapController extends ChangeNotifier {
       },
     );
   }
+
+  /// SymbolManager是否能重叠，默认不能
+  /// [allowOverlap].
+  Future<void> allowSymbolOverlap(bool allowOverlap) async {
+    assert(allowOverlap != null);
+    _channel.invokeMethod(
+      'mapbox#allowSymbolOverlap',
+      <String, dynamic>{
+        'allowOverlap': allowOverlap,
+      },
+    );
+  }
 }
