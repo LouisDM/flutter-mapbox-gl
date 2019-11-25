@@ -304,6 +304,8 @@ final class MapboxMapController
         case "name_en":
           localizationPlugin.setMapLanguage(MapLocale.ENGLISH);
           break;
+        default:
+          break;
       }
     } catch (RuntimeException exception) {
       Log.d(TAG, exception.toString());
@@ -366,10 +368,10 @@ final class MapboxMapController
   private void enableSymbolManager(@NonNull Style style) {
     if (symbolManager == null) {
       symbolManager = new SymbolManager(mapView, mapboxMap, style);
-      symbolManager.setIconAllowOverlap(true);
-      symbolManager.setIconIgnorePlacement(true);
-      symbolManager.setTextAllowOverlap(true);
-      symbolManager.setTextIgnorePlacement(true);
+      symbolManager.setIconAllowOverlap(false);
+      symbolManager.setIconIgnorePlacement(false);
+      symbolManager.setTextAllowOverlap(false);
+      symbolManager.setTextIgnorePlacement(false);
       symbolManager.addClickListener(MapboxMapController.this::onAnnotationClick);
     }
   }
@@ -650,6 +652,16 @@ final class MapboxMapController
       case "mapbox#localization": {
         final String language = call.argument("language");
         setLanguage(language);
+        break;
+      }
+      case "mapbox#allowSymbolOverlap": {
+        final boolean enable = call.argument("allowOverlap");
+        if (symbolManager != null) {
+          symbolManager.setIconAllowOverlap(enable);
+          symbolManager.setIconIgnorePlacement(enable);
+          symbolManager.setTextAllowOverlap(enable);
+          symbolManager.setTextIgnorePlacement(enable);
+        }
         break;
       }
       default:
