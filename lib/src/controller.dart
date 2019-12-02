@@ -609,4 +609,20 @@ class MapboxMapController extends ChangeNotifier {
       },
     );
   }
+
+  /// 切换轨迹点动画，会把相机限制在坐标内，并让相机在地图区域内居中
+  /// [lat1].[lng1].当前轨迹点坐标
+  /// [lat2].[lng2].目标轨迹点坐标
+  /// [durationMs].动画时间，默认1000Ms
+  /// [zoom].地图缩放倍数，默认15倍
+  Future<void> easeCamera(double lat1,double lng1,double lat2, double lng2, [int durationMs = 1000, int zoom = 15]) async {
+    await _channel.invokeMethod('camera#ease', <String, dynamic>{
+      'lat1': lat1,
+      'lng1': lng1,
+      'lat2': lat2,
+      'lng2': lng2,
+      'durationMs': durationMs,
+      'zoom': 15,
+    });
+  }
 }
