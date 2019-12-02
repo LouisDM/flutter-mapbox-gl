@@ -7,22 +7,32 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     private var registrar: FlutterPluginRegistrar
     private var channel: FlutterMethodChannel?
     
+    
     private var mapView: MGLMapView
+    private var locales: Locale?
+    private var style: MGLStyle?
+  
     private var isMapReady = false
     private var mapReadyResult: FlutterResult?
     
     private var initialTilt: CGFloat?
     private var cameraTargetBounds: MGLCoordinateBounds?
-    private var trackCameraPosition = false
-    private var myLocationEnabled = false
+    private var trackCameraPosition = true
+    private var myLocationEnabled = true
+    
+    private var myLocationTrackingMode :MGLUserTrackingMode?
     
     private var lineManager: LineManager?
     private var circleManager: CircleManager?
     private var symbolManager: SymbolManager?
     
+    
+    
+    
     func view() -> UIView {
         return mapView
     }
+
     
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?, registrar: FlutterPluginRegistrar) {
         mapView = MGLMapView(frame: frame)
@@ -47,7 +57,10 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         }
     }
     
-    
+    func mapView(_ mapView: MGLMapView, shouldChangeFrom oldCamera: MGLMapCamera, to newCamera: MGLMapCamera, reason: MGLCameraChangeReason) -> Bool {
+        self .onCameraTrackingDismissed()
+        return true
+    }
     
     func onMethodCall(methodCall: FlutterMethodCall, result: @escaping FlutterResult) {
         switch(methodCall.method) {
@@ -77,6 +90,8 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             if let camera = Convert.parseCameraUpdate(cameraUpdate: cameraUpdate, mapView: mapView) {
                 mapView.setCamera(camera, animated: true)
             }
+     
+            
         case "symbol#add":
             guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
@@ -93,7 +108,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
                     }
                 }
             }
-            
+                        
             // Create a circle and populate it.
             let symbolBuilder = SymbolBuilder(symbolManager: symbolManager)
             Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbolBuilder)
@@ -102,6 +117,27 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             } else {
                 result(nil)
             }
+            
+        case "mapbox#localization":
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let language = arguments["language"] as? String else { return }
+            setLangauage(language: language)
+
+            break
+            
+        case "mapbox#allowSymbolOverlap":
+
+            guard let symbolManager = symbolManager else { return }
+            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+            guard let enable = arguments["allowOverlap"] as? [Bool: Any] else { return }
+
+            symbolManager.layer?.iconAllowsOverlap = NSExpression(forConstantValue: enable)
+            symbolManager.layer?.textAllowsOverlap = NSExpression(forConstantValue: enable)
+            symbolManager.layer?.textIgnoresPlacement = NSExpression(forConstantValue: enable)
+            symbolManager.layer?.iconIgnoresPlacement = NSExpression(forConstantValue: enable)
+            
+            break
+            
         case "symbol#update":
             guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
@@ -322,12 +358,35 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         return trackCameraPosition ? mapView.camera : nil
     }
     
+    
+//    regiondidchangean
+    
+    private func setLangauage(language:String?){
+        switch language {
+        case "name_zh_Hans":
+            style?.localizeLabels(into: Locale(identifier: "Hans"))
+            break
+        case "name_zh_Hant":
+             style?.localizeLabels(into: Locale(identifier: "Hant"))
+            break
+        case "name_en":
+            style?.localizeLabels(into: Locale(identifier: "en"))
+            break
+        default:
+            break
+        }
+    }
+    
     /*
      *  MGLMapViewDelegate
      */
     func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
         isMapReady = true
         updateMyLocationEnabled()
+        
+        style.localizeLabels(into: nil)
+        
+        
         
         if let initialTilt = initialTilt {
             let camera = mapView.camera
@@ -356,6 +415,11 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         mapReadyResult?(nil)
     }
     
+    
+    func mapView(_ mapView: MGLMapView, didUpdate userLocation: MGLUserLocation?) {
+        
+    }
+    
     func mapView(_ mapView: MGLMapView, shouldChangeFrom oldCamera: MGLMapCamera, to newCamera: MGLMapCamera) -> Bool {
         guard let bbox = cameraTargetBounds else { return true }
         // Get the current camera to restore it after.
@@ -377,9 +441,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         
         return inside && intersects
     }
-    
-    
-    
     
     /*
      *  MapboxMapOptionsSink
@@ -430,8 +491,13 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     }
     func setMyLocationTrackingMode(myLocationTrackingMode: MGLUserTrackingMode) {
         mapView.userTrackingMode = myLocationTrackingMode
+       
     }
     
+    
+    
+    func localizeLabels(into locale: Locale?){
+    }
     
     func getMapCurrentImageBase64(zoom: Double) -> NSString {
         
@@ -463,6 +529,12 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         return data!.base64EncodedString(options: NSData.Base64EncodingOptions.init(rawValue: 0)) as NSString
     }
     
+    func  onCameraTrackingDismissed() {
+
+        channel?.invokeMethod("map#onCameraTrackingDismissed", arguments: nil)
+     }
+    
+
     
     func getMapCurrentImage(target: UIView, backImage: UIImage) -> UIImage {
         
@@ -485,5 +557,4 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     }
     
 }
-
 
