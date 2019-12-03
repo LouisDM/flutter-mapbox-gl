@@ -110,6 +110,22 @@ class Convert {
             let camera = mapView.camera
             camera.pitch = tilt
             return camera
+        case "easeCamera":
+            guard let zoom = cameraUpdate[5] as? Double else { return nil }
+            guard let lat2 = cameraUpdate[2] as? Double else { return nil }
+            guard let lng2 = cameraUpdate[3] as? Double else { return nil }
+
+            
+            let camera = mapView.camera
+            
+            let altitude = getAltitude(zoom: zoom, mapView: mapView)
+            camera.altitude = altitude
+            if (cameraUpdate.count == 2) {
+                return camera
+            } else {
+                camera.centerCoordinate = CLLocationCoordinate2DMake(lat2, lng2)
+                return camera
+            }
         default:
             print("\(type) not implemented!")
         }

@@ -17,25 +17,25 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     private var initialTilt: CGFloat?
     private var cameraTargetBounds: MGLCoordinateBounds?
-    private var trackCameraPosition = true
+    private var trackCameraPosition = false
     private var myLocationEnabled = true
-    
-    private var myLocationTrackingMode :MGLUserTrackingMode?
     
     private var lineManager: LineManager?
     private var circleManager: CircleManager?
     private var symbolManager: SymbolManager?
     
     
-    
-    
     func view() -> UIView {
+
         return mapView
     }
 
     
+    
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?, registrar: FlutterPluginRegistrar) {
         mapView = MGLMapView(frame: frame)
+        mapView.showsUserLocation = true
+        mapView.userTrackingMode = MGLUserTrackingMode.none
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.registrar = registrar
         
@@ -58,7 +58,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     }
     
     func mapView(_ mapView: MGLMapView, shouldChangeFrom oldCamera: MGLMapCamera, to newCamera: MGLMapCamera, reason: MGLCameraChangeReason) -> Bool {
-        self .onCameraTrackingDismissed()
+        self.onCameraTrackingDismissed()
         return true
     }
     
@@ -79,20 +79,53 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
                 result(nil)
             }
         case "camera#move":
+            print("点击移动symbol")
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let cameraUpdate = arguments["cameraUpdate"] as? [Any] else { return }
             if let camera = Convert.parseCameraUpdate(cameraUpdate: cameraUpdate, mapView: mapView) {
-                mapView.setCamera(camera, animated: false)
+//                mapView.setCenter(camera.centerCoordinate, zoomLevel: 15, animated: true)
+                mapView.fly(to: camera, withDuration: 1, completionHandler: nil)
+                mapView.setCenter(camera.centerCoordinate, zoomLevel: 15, animated: true)
             }
         case "camera#animate":
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let cameraUpdate = arguments["cameraUpdate"] as? [Any] else { return }
+            
             if let camera = Convert.parseCameraUpdate(cameraUpdate: cameraUpdate, mapView: mapView) {
-                mapView.setCamera(camera, animated: true)
+//                mapView.setCamera(camera, animated: true)
+                mapView.setCenter(camera.centerCoordinate, zoomLevel: 15, animated: true)
+                 mapView.fly(to: camera, withDuration: 1, completionHandler: nil)
             }
+            
+        case "camera#ease":
+            
+//            guard let arguments = methodCall.arguments as? [String: Any] else { return }
+//            guard let animates = arguments["easeCamera"] as? [Any] else { return }
+//            let lat1:Double = arguments["lat1"] as! Double
+//            let lng1:Double = arguments["lng1"] as! Double
+//            let zoom:Int = arguments["zoom"] as! Int
+//            let durationMs:Int = arguments["durationMs"] as! Int
+//
+//
+//            let  currentCenter = CLLocationCoordinate2DMake(lat1, lng1)
+//
+//
+//            mapView.setCenter(currentCenter, zoomLevel: 15, animated: true)
+//            if let camera = Convert.parseCameraUpdate(cameraUpdate: animates, mapView: mapView) {
+//
+//                if let duration = arguments["durationMs"] as? Int {
+//
+//                    mapView.fly(to: camera, withDuration: 1, completionHandler: nil)
+//                }
+//
+//            }
+//
+//
+            break
      
             
         case "symbol#add":
+            print("打印add")
             guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             
@@ -137,6 +170,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             symbolManager.layer?.iconIgnoresPlacement = NSExpression(forConstantValue: enable)
             
             break
+        
             
         case "symbol#update":
             guard let symbolManager = symbolManager else { return }
@@ -144,7 +178,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let symbolIdString = arguments["symbol"] as? String else { return }
             guard let symbolId = UInt64(symbolIdString) else { return }
             guard let symbol = symbolManager.getAnnotation(id: symbolId) else { return }
-            
+
             // Create a circle and populate it.
             let symbolBuilder = SymbolBuilder(symbolManager: symbolManager, symbol: symbol)
             Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbolBuilder)
@@ -348,7 +382,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         if let userLocation = mapView.userLocation {
             
             if let coordinate = userLocation.location {
-                
                 mapView.setCenter(coordinate.coordinate, animated: true)
             }
         }
@@ -380,12 +413,17 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     /*
      *  MGLMapViewDelegate
      */
+    
+    func mapViewDidFinishLoadingMap(_ mapView: MGLMapView) {
+         updateMyLocationEnabled()
+    }
+    
     func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
         isMapReady = true
+       
         updateMyLocationEnabled()
         
         style.localizeLabels(into: nil)
-        
         
         
         if let initialTilt = initialTilt {
@@ -414,11 +452,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         
         mapReadyResult?(nil)
     }
-    
-    
-    func mapView(_ mapView: MGLMapView, didUpdate userLocation: MGLUserLocation?) {
-        
-    }
+
     
     func mapView(_ mapView: MGLMapView, shouldChangeFrom oldCamera: MGLMapCamera, to newCamera: MGLMapCamera) -> Bool {
         guard let bbox = cameraTargetBounds else { return true }
@@ -495,10 +529,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     }
     
     
-    
-    func localizeLabels(into locale: Locale?){
-    }
-    
     func getMapCurrentImageBase64(zoom: Double) -> NSString {
         
         let options = MGLMapSnapshotOptions.init(styleURL: self.mapView.styleURL, camera: self.mapView.camera, size: self.mapView.bounds.size)
@@ -530,12 +560,10 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     }
     
     func  onCameraTrackingDismissed() {
-
         channel?.invokeMethod("map#onCameraTrackingDismissed", arguments: nil)
      }
     
 
-    
     func getMapCurrentImage(target: UIView, backImage: UIImage) -> UIImage {
         
         UIGraphicsBeginImageContextWithOptions(backImage.size, false, UIScreen.main.scale)

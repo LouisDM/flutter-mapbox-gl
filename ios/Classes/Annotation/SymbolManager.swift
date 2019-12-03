@@ -9,10 +9,10 @@ class SymbolManager: AnnotationManager<SymbolGeometry> {
     init() {
         super.init(sourceId: ID_GEOJSON_SOURCE)
         layer = MGLSymbolStyleLayer(identifier: ID_GEOJSON_LAYER, source: source)
-        layer?.iconAllowsOverlap = NSExpression(forConstantValue: false)
-        layer?.textAllowsOverlap = NSExpression(forConstantValue: false)
-        layer?.textIgnoresPlacement = NSExpression(forConstantValue: false)
-        layer?.iconIgnoresPlacement = NSExpression(forConstantValue: false)
+        layer?.iconAllowsOverlap = NSExpression(forConstantValue: true)
+        layer?.textAllowsOverlap = NSExpression(forConstantValue: true)
+        layer?.textIgnoresPlacement = NSExpression(forConstantValue: true)
+        layer?.iconIgnoresPlacement = NSExpression(forConstantValue: true)
     }
     
     func create(options: SymbolOptions) -> Symbol? {

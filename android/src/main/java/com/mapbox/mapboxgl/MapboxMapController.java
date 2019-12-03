@@ -921,12 +921,13 @@ final class MapboxMapController
   public void setMyLocationTrackingMode(int myLocationTrackingMode) {
     if (this.myLocationTrackingMode == myLocationTrackingMode) {
       return;
-    }
+    }camera#animate
     this.myLocationTrackingMode = myLocationTrackingMode;
     if (mapboxMap != null && locationComponent != null) {
       updateMyLocationTrackingMode();
     }
   }
+
 
   private void updateMyLocationEnabled() {
     //TODO: call location initialization if changed to true and not initialized yet.;
