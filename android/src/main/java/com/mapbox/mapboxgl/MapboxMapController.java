@@ -953,7 +953,7 @@ final class MapboxMapController
   public void setMyLocationTrackingMode(int myLocationTrackingMode) {
     if (this.myLocationTrackingMode == myLocationTrackingMode) {
       return;
-    }camera#animate
+    }
     this.myLocationTrackingMode = myLocationTrackingMode;
     if (mapboxMap != null && locationComponent != null) {
       updateMyLocationTrackingMode();

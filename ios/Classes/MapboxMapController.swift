@@ -79,11 +79,9 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
                 result(nil)
             }
         case "camera#move":
-            print("点击移动symbol")
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let cameraUpdate = arguments["cameraUpdate"] as? [Any] else { return }
             if let camera = Convert.parseCameraUpdate(cameraUpdate: cameraUpdate, mapView: mapView) {
-//                mapView.setCenter(camera.centerCoordinate, zoomLevel: 15, animated: true)
                 mapView.fly(to: camera, withDuration: 1, completionHandler: nil)
                 mapView.setCenter(camera.centerCoordinate, zoomLevel: 15, animated: true)
             }
@@ -92,40 +90,10 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let cameraUpdate = arguments["cameraUpdate"] as? [Any] else { return }
             
             if let camera = Convert.parseCameraUpdate(cameraUpdate: cameraUpdate, mapView: mapView) {
-//                mapView.setCamera(camera, animated: true)
                 mapView.setCenter(camera.centerCoordinate, zoomLevel: 15, animated: true)
-                 mapView.fly(to: camera, withDuration: 1, completionHandler: nil)
+                mapView.fly(to: camera, withDuration: 1, completionHandler: nil)
             }
-            
-        case "camera#ease":
-            
-//            guard let arguments = methodCall.arguments as? [String: Any] else { return }
-//            guard let animates = arguments["easeCamera"] as? [Any] else { return }
-//            let lat1:Double = arguments["lat1"] as! Double
-//            let lng1:Double = arguments["lng1"] as! Double
-//            let zoom:Int = arguments["zoom"] as! Int
-//            let durationMs:Int = arguments["durationMs"] as! Int
-//
-//
-//            let  currentCenter = CLLocationCoordinate2DMake(lat1, lng1)
-//
-//
-//            mapView.setCenter(currentCenter, zoomLevel: 15, animated: true)
-//            if let camera = Convert.parseCameraUpdate(cameraUpdate: animates, mapView: mapView) {
-//
-//                if let duration = arguments["durationMs"] as? Int {
-//
-//                    mapView.fly(to: camera, withDuration: 1, completionHandler: nil)
-//                }
-//
-//            }
-//
-//
-            break
-     
-            
         case "symbol#add":
-            print("打印add")
             guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             
@@ -154,12 +122,11 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         case "mapbox#localization":
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let language = arguments["language"] as? String else { return }
-            setLangauage(language: language)
 
+            setLangauage(language: language)
             break
             
         case "mapbox#allowSymbolOverlap":
-
             guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let enable = arguments["allowOverlap"] as? [Bool: Any] else { return }
