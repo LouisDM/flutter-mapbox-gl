@@ -26,6 +26,7 @@ import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdate;
 
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.location.LocationComponent;
@@ -368,10 +369,10 @@ final class MapboxMapController
   private void enableSymbolManager(@NonNull Style style) {
     if (symbolManager == null) {
       symbolManager = new SymbolManager(mapView, mapboxMap, style);
-      symbolManager.setIconAllowOverlap(false);
-      symbolManager.setIconIgnorePlacement(false);
-      symbolManager.setTextAllowOverlap(false);
-      symbolManager.setTextIgnorePlacement(false);
+      symbolManager.setIconAllowOverlap(true);
+      symbolManager.setIconIgnorePlacement(true);
+      symbolManager.setTextAllowOverlap(true);
+      symbolManager.setTextIgnorePlacement(true);
       symbolManager.addClickListener(MapboxMapController.this::onAnnotationClick);
     }
   }
@@ -661,6 +662,37 @@ final class MapboxMapController
           symbolManager.setIconIgnorePlacement(enable);
           symbolManager.setTextAllowOverlap(enable);
           symbolManager.setTextIgnorePlacement(enable);
+        }
+        break;
+      }
+      case "camera#ease": {
+        final double lat1 = call.argument("lat1");
+        final double lng1 = call.argument("lng1");
+        final double lat2 = call.argument("lat2");
+        final double lng2 = call.argument("lng2");
+        final int durationMs = call.argument("durationMs");
+        final int zoom = call.argument("zoom");
+
+        CameraPosition target = new CameraPosition.Builder().target(new LatLng(lat2, lng2)).zoom(zoom).build();
+
+        LatLngBounds latLngBounds = new LatLngBounds.Builder()
+                .include(new LatLng(lat1, lng1))
+                .include(new LatLng(lat2, lng2))
+                .build();
+
+        if (mapboxMap != null){
+          mapboxMap.easeCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 50, 10, 50, 400),
+                  new MapboxMap.CancelableCallback() {
+                    @Override
+                    public void onCancel() {
+
+                    }
+
+                    @Override
+                    public void onFinish() {
+                      mapboxMap.easeCamera(CameraUpdateFactory.newCameraPosition(target), durationMs);
+                    }
+                  });
         }
         break;
       }
