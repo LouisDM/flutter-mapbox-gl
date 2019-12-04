@@ -960,6 +960,7 @@ final class MapboxMapController
     }
   }
 
+
   private void updateMyLocationEnabled() {
     //TODO: call location initialization if changed to true and not initialized yet.;
     //Show/Hide use location as needed
