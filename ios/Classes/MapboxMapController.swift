@@ -10,7 +10,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     private var mapView: MGLMapView
     private var locales: Locale?
-    private var style: MGLStyle?
+    private var myStyle: MGLStyle?
   
     private var isMapReady = false
     private var mapReadyResult: FlutterResult?
@@ -78,6 +78,8 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             } else {
                 result(nil)
             }
+            
+            
         case "camera#move":
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let cameraUpdate = arguments["cameraUpdate"] as? [Any] else { return }
@@ -359,18 +361,19 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     }
     
     
+    
 //    regiondidchangean
     
     private func setLangauage(language:String?){
         switch language {
-        case "name_zh_Hans":
-            style?.localizeLabels(into: Locale(identifier: "Hans"))
+        case "name_zh-Hans":
+            myStyle?.localizeLabels(into: Locale(identifier: "Hans"))
             break
-        case "name_zh_Hant":
-             style?.localizeLabels(into: Locale(identifier: "Hant"))
+        case "name_zh-Hant":
+             myStyle?.localizeLabels(into: Locale(identifier: "Hant"))
             break
         case "name_en":
-            style?.localizeLabels(into: Locale(identifier: "en"))
+            myStyle?.localizeLabels(into: Locale(identifier: "en"))
             break
         default:
             break
@@ -392,6 +395,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         
         style.localizeLabels(into: nil)
         
+        myStyle = style;
         
         if let initialTilt = initialTilt {
             let camera = mapView.camera
