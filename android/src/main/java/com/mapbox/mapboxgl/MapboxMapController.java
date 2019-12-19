@@ -70,9 +70,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 import static com.mapbox.mapboxgl.MapboxMapsPlugin.CREATED;
 import static com.mapbox.mapboxgl.MapboxMapsPlugin.DESTROYED;
@@ -124,6 +122,7 @@ final class MapboxMapController
   private final String styleStringInitial;
   private LocationComponent locationComponent = null;
   private LocalizationPlugin localizationPlugin = null;
+  private HashMap<String, Bitmap> styleImages = null;
 
   MapboxMapController(
     int id,
@@ -336,8 +335,17 @@ final class MapboxMapController
       // needs to be placed after SymbolManager#addClickListener,
       // is fixed with 0.6.0 of annotations plugin
       mapboxMap.addOnMapClickListener(MapboxMapController.this);
+      addStyleImages(style);
     }
   };
+
+  private void addStyleImages(@NonNull Style style) {
+      if (this.styleImages != null){
+          style.addImages(styleImages);
+          styleImages.clear();
+          styleImages = null;
+      }
+  }
 
   @SuppressWarnings( {"MissingPermission"})
   private void enableLocationComponent(@NonNull Style style) {
@@ -566,7 +574,13 @@ final class MapboxMapController
             e.printStackTrace();
           }
         }
-        mapboxMap.getStyle().addImages(images);
+
+        Style style = mapboxMap.getStyle();
+        if (style == null){
+            this.styleImages = images;
+        } else {
+            style.addImages(images);
+        }
         result.success(null);
         break;
       }
