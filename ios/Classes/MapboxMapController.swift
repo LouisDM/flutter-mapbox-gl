@@ -13,7 +13,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     private var initialTilt: CGFloat?
     private var cameraTargetBounds: MGLCoordinateBounds?
     private var trackCameraPosition = false
-    private var myLocationEnabled = false
+    private var myLocationEnabled = true
     private var myLocationTrackingMode = MGLUserTrackingMode.none
     private var lineManager: LineManager?
     private var circleManager: CircleManager?
@@ -342,14 +342,19 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
      */
     
     func mapViewDidFinishLoadingMap(_ mapView: MGLMapView) {
+        
         if(self.myLocationEnabled){
             updateMyLocationEnabled()
         }
         if(self.myLocationTrackingMode != .none){
             updateMyLocationEnabled()
-            channel?.invokeMethod("camera#onMoveStarted", arguments: nil)
-            channel?.invokeMethod("camera#onIdle", arguments: nil)
         }
+        //iOS端打开map,先进入到北京后跳转到当前用户位置此时地址文本显示为北京地区，所以加了一个延迟1.5s，安全区域会更新文本显示出当前正确的地理位置
+        DispatchQueue.main.asyncAfter(deadline: .now()+1.5, execute:
+        {
+            self.channel?.invokeMethod("camera#onMoveStarted", arguments: nil)
+            self.channel?.invokeMethod("camera#onIdle", arguments: nil)
+        })
 
     }
     
@@ -384,6 +389,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         }
         
         mapReadyResult?(nil)
+        
         
     }
     
