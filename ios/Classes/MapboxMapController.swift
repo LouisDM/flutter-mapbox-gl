@@ -24,7 +24,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
 
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, arguments args: Any?, registrar: FlutterPluginRegistrar) {
         mapView = MGLMapView(frame: frame)
-        mapView.showsUserLocation = true
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         mapView.allowsScrolling = true
         mapView.showsUserHeadingIndicator = true
@@ -116,7 +115,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let symbolManager = symbolManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
             guard let enable = arguments["allowOverlap"] as? [Bool: Any] else { return }
-
             symbolManager.layer?.iconAllowsOverlap = NSExpression(forConstantValue: enable)
             symbolManager.layer?.textAllowsOverlap = NSExpression(forConstantValue: enable)
             symbolManager.layer?.textIgnoresPlacement = NSExpression(forConstantValue: enable)
@@ -128,7 +126,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let symbolIdString = arguments["symbol"] as? String else { return }
             guard let symbolId = UInt64(symbolIdString) else { return }
             guard let symbol = symbolManager.getAnnotation(id: symbolId) else { return }
-
             // Create a circle and populate it.
             let symbolBuilder = SymbolBuilder(symbolManager: symbolManager, symbol: symbol)
             Convert.interpretSymbolOptions(options: arguments["options"], delegate: symbolBuilder)
@@ -140,7 +137,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let symbolIdString = arguments["symbol"] as? String else { return }
             guard let symbolId = UInt64(symbolIdString) else { return }
             guard let symbol = symbolManager.getAnnotation(id: symbolId) else { return }
-            
             symbolManager.delete(annotation: symbol)
             result(nil)
         case "line#add":
@@ -169,7 +165,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             guard let lineIdString = arguments["line"] as? String else { return }
             guard let lineId = UInt64(lineIdString) else { return }
             guard let line = lineManager.getAnnotation(id: lineId) else { return }
-            
             // Create a line and update it.
             let lineBuilder = LineBuilder(lineManager: lineManager, line: line)
             Convert.interpretLineOptions(options: arguments["options"], delegate: lineBuilder)
@@ -187,7 +182,6 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         case "circle#add":
             guard let circleManager = circleManager else { return }
             guard let arguments = methodCall.arguments as? [String: Any] else { return }
-            
             if let options = arguments["options"] as? NSDictionary {
                 if let geometry = options["geometry"] as? [Double] {
                     if geometry.count == 0 {
@@ -229,7 +223,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
             if myLocationEnabled == false{
                 result(nil)
             }else{
-                result(["latitude":mapView.userLocation?.location?.coordinate.latitude,"longitude":mapView.userLocation?.location?.coordinate.longitude])
+        result(["latitude":mapView.userLocation?.location?.coordinate.latitude,"longitude":mapView.userLocation?.location?.coordinate.longitude])
             }
         case "circle#getGeometry":
             guard let circleManager = circleManager else { return }
@@ -348,9 +342,20 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
      */
     
     func mapViewDidFinishLoadingMap(_ mapView: MGLMapView) {
+        
         if(self.myLocationEnabled){
             updateMyLocationEnabled()
         }
+        if(self.myLocationTrackingMode != .none){
+            updateMyLocationEnabled()
+        }
+        //iOS端打开map,先进入到北京后跳转到当前用户位置此时地址文本显示为北京地区，所以加了一个延迟1.5s，安全区域会更新文本显示出当前正确的地理位置
+        DispatchQueue.main.asyncAfter(deadline: .now()+1.5, execute:
+        {
+            self.channel?.invokeMethod("camera#onMoveStarted", arguments: nil)
+            self.channel?.invokeMethod("camera#onIdle", arguments: nil)
+        })
+
     }
     
     func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
@@ -384,6 +389,7 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         }
         
         mapReadyResult?(nil)
+        
         
     }
     
