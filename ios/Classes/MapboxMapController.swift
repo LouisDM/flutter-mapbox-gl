@@ -27,6 +27,9 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         mapView.allowsScrolling = true
         mapView.showsUserHeadingIndicator = true
+        let dic = args as? [String : Any]
+        self.myLocationEnabled = dic?["myLocationEnabled"] as? Bool ?? false
+        self.myLocationTrackingMode = dic?["myLocationTrackingMode"] as! MGLUserTrackingMode
         self.registrar = registrar
         super.init()
         mapView.delegate = self
@@ -343,9 +346,9 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     func mapViewDidFinishLoadingMap(_ mapView: MGLMapView) {
         
-        if(self.myLocationEnabled){
-            updateMyLocationEnabled()
-        }
+//        if(self.myLocationEnabled){
+//            updateMyLocationEnabled()
+//        }
         if(self.myLocationTrackingMode != .none){
             updateMyLocationEnabled()
         }
