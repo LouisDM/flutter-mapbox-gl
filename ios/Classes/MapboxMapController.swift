@@ -511,6 +511,15 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         channel?.invokeMethod("map#onCameraTrackingDismissed", arguments: nil)
      }
     
+    //当滑动地图时候执行camera#onMove方法
+    func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
+ //        CGPoint position =
+         let longtitude =  mapView.centerCoordinate.longitude
+         let latitude = mapView.centerCoordinate.latitude
+         let point = CGPoint(x: longtitude, y: latitude)
+         channel?.invokeMethod("camera#onMove", arguments: point)
+     }
+    
     func onMapClick(){
         channel?.invokeMethod("map#onMapClick", arguments: nil)
     }
