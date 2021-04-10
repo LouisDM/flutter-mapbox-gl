@@ -27,6 +27,9 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         mapView.allowsScrolling = true
         mapView.showsUserHeadingIndicator = true
+        let dic = args as? [String : Any]
+        self.myLocationEnabled = dic?["myLocationEnabled"] as? Bool ?? false
+        self.myLocationTrackingMode = dic?["myLocationTrackingMode"] as! MGLUserTrackingMode
         self.registrar = registrar
         super.init()
         mapView.delegate = self
@@ -343,12 +346,12 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     func mapViewDidFinishLoadingMap(_ mapView: MGLMapView) {
         
-        if(self.myLocationEnabled){
-            updateMyLocationEnabled()
-        }
-        if(self.myLocationTrackingMode != .none){
-            updateMyLocationEnabled()
-        }
+//        if(self.myLocationEnabled){
+//            updateMyLocationEnabled()
+//        }
+//        if(self.myLocationTrackingMode != .none){
+//            updateMyLocationEnabled()
+//        }
         //iOS端打开map,先进入到北京后跳转到当前用户位置此时地址文本显示为北京地区，所以加了一个延迟1.5s，安全区域会更新文本显示出当前正确的地理位置
         DispatchQueue.main.asyncAfter(deadline: .now()+1.5, execute:
         {
@@ -506,6 +509,15 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
     
     func  onCameraTrackingDismissed() {
         channel?.invokeMethod("map#onCameraTrackingDismissed", arguments: nil)
+     }
+    
+    //当滑动地图时候执行camera#onMove方法
+    func mapView(_ mapView: MGLMapView, regionDidChangeAnimated animated: Bool) {
+ //        CGPoint position =
+//         let longtitude =  mapView.centerCoordinate.longitude
+//         let latitude = mapView.centerCoordinate.latitude
+//         let point = CGPoint(x: longtitude, y: latitude)
+//         channel?.invokeMethod("camera#onMove", arguments: point)
      }
     
     func onMapClick(){
