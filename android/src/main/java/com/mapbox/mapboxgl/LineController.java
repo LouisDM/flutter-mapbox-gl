@@ -6,6 +6,7 @@
 
 package com.mapbox.mapboxgl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.PointF;
@@ -29,6 +30,10 @@ class LineController implements LineOptionsSink {
     this.line = line;
     this.consumeTapEvents = consumeTapEvents;
     this.onTappedListener = onTappedListener;
+  }
+
+  public Line getLine(){
+    return this.line;
   }
 
   boolean onTap() {
@@ -85,6 +90,15 @@ class LineController implements LineOptionsSink {
   @Override
   public void setGeometry(List<LatLng> geometry) {
     line.setLatLngs(geometry);
+  }
+
+  public List<LatLng> getGeometry() {
+    List<Point> points =  line.getGeometry().coordinates();
+    List<LatLng> latLngs = new ArrayList<>();
+    for (Point point : points) {
+      latLngs.add(new LatLng(point.latitude(), point.longitude()));
+    }
+    return latLngs;
   }
 
   @Override

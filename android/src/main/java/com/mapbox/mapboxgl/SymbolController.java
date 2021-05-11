@@ -34,6 +34,10 @@ class SymbolController implements SymbolOptionsSink {
     return consumeTapEvents;
   }
 
+  public Symbol getSymbol(){
+    return this.symbol;
+  }
+
   void remove(SymbolManager symbolManager) {
     symbolManager.delete(symbol);
   }
@@ -62,6 +66,9 @@ class SymbolController implements SymbolOptionsSink {
   public void setIconAnchor(String iconAnchor) {
     symbol.setIconAnchor(iconAnchor);
   }
+
+  @Override
+  public void setFontNames(String[] fontNames) { symbol.setTextFont(fontNames); }
 
   @Override
   public void setTextField(String textField) {
@@ -166,6 +173,11 @@ class SymbolController implements SymbolOptionsSink {
   @Override
   public void setGeometry(LatLng geometry) {
     symbol.setGeometry(Point.fromLngLat(geometry.getLongitude(), geometry.getLatitude()));
+  }
+
+  public LatLng getGeometry() {
+    Point point =  symbol.getGeometry();
+    return new LatLng(point.latitude(), point.longitude());
   }
 
   @Override

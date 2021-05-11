@@ -23,6 +23,8 @@ interface SymbolOptionsSink {
 
   void setIconAnchor(String iconAnchor);
 
+  void setFontNames(String[] fontNames);
+
   void setTextField(String textField);
 
   void setTextSize(float textSize);
@@ -66,4 +68,5 @@ interface SymbolOptionsSink {
   void setSymbolSortKey(float symbolSortKey);
 
   void setDraggable(boolean draggable);
+
 }

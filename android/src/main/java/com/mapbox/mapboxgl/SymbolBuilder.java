@@ -13,16 +13,15 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
 
 class SymbolBuilder implements SymbolOptionsSink {
-  private final SymbolManager symbolManager;
   private final SymbolOptions symbolOptions;
+  private static boolean customImage;
 
-  SymbolBuilder(SymbolManager symbolManager) {
-    this.symbolManager = symbolManager;
+  SymbolBuilder() {
     this.symbolOptions = new SymbolOptions();
   }
 
-  Symbol build() {
-    return symbolManager.create(symbolOptions);
+  public SymbolOptions getSymbolOptions(){
+    return this.symbolOptions;
   }
 
   @Override
@@ -49,6 +48,9 @@ class SymbolBuilder implements SymbolOptionsSink {
   public void setIconAnchor(String iconAnchor) {
     symbolOptions.withIconAnchor(iconAnchor);
   }
+
+  @Override
+  public void setFontNames(String[] fontNames) { symbolOptions.withTextFont(fontNames); }
 
   @Override
   public void setTextField(String textField) {
@@ -158,5 +160,9 @@ class SymbolBuilder implements SymbolOptionsSink {
   @Override
   public void setDraggable(boolean draggable) {
     symbolOptions.withDraggable(draggable);
+  }
+
+  public boolean getCustomImage() { 
+    return this.customImage;
   }
 }

@@ -43,9 +43,13 @@
 	<false/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
-	<key>MGLMapboxAccessToken</key>
-	<string>YOUR_TOKEN_HERE</string>
+    <key>MGLMapboxAccessToken</key>
+    <string>YOUR_KEY_HERE</string>
+	<key>MGLMapboxMetricsEnabledSettingShownInApp</key>
+	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Shows your location on the map and helps improve the map</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Shows your location on the map and helps improve the map</string>
 </dict>
 </plist>
