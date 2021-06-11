@@ -29,7 +29,10 @@ class MapboxMapController: NSObject, FlutterPlatformView, MGLMapViewDelegate, Ma
         mapView.showsUserHeadingIndicator = true
         let dic = args as? [String : Any]
         self.myLocationEnabled = dic?["myLocationEnabled"] as? Bool ?? false
-        self.myLocationTrackingMode = dic?["myLocationTrackingMode"] as! MGLUserTrackingMode
+        self.myLocationTrackingMode = dic?["myLocationTrackingMode"] as? MGLUserTrackingMode ?? MGLUserTrackingMode.none;
+        if(self.myLocationTrackingMode != .none){
+            self.myLocationTrackingMode = dic?["myLocationTrackingMode"] as! MGLUserTrackingMode;
+        }
         self.registrar = registrar
         super.init()
         mapView.delegate = self
